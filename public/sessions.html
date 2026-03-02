@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sessions — M@SA</title>
+  <link rel="manifest" href="/assets/manifest.json">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    .sessions-hero{background:linear-gradient(135deg,#0a1628,#1a3a6b);padding:48px 24px;text-align:center;border-bottom:2px solid var(--gold)}
+    .sessions-hero h1{font-family:var(--font-display);font-size:2rem;color:var(--gold);margin-bottom:8px}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+    .filter-btn{padding:7px 16px;border-radius:20px;border:1px solid rgba(79,195,247,0.2);background:none;color:var(--grey-light);cursor:pointer;font-size:0.78rem;transition:all var(--transition)}
+    .filter-btn.active,.filter-btn:hover{background:var(--light-blue);color:var(--navy-dark);border-color:var(--light-blue)}
+    .session-card{background:var(--navy-mid);border:1px solid rgba(79,195,247,0.12);border-radius:var(--radius-lg);overflow:hidden;transition:transform var(--transition)}
+    .session-card:hover{transform:translateY(-3px)}
+    .sc-top{padding:20px 20px 0}
+    .sc-title{font-size:1rem;font-weight:700;color:var(--white);margin:10px 0 6px;line-height:1.4}
+    .sc-desc{font-size:0.82rem;color:var(--grey-light);margin-bottom:10px;line-height:1.6}
+    .sc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+    .sc-meta span{font-size:0.73rem;color:var(--grey-light)}
+    .sc-footer{padding:12px 20px;border-top:1px solid rgba(79,195,247,0.08);display:flex;justify-content:space-between;align-items:center}
+    .live-dot{display:inline-block;width:8px;height:8px;background:#4caf50;border-radius:50%;animation:pulse 1.5s infinite;margin-right:4px}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .deadline-warn{background:rgba(255,160,0,0.1);border:1px solid rgba(255,160,0,0.3);border-radius:var(--radius);padding:7px 10px;font-size:0.73rem;color:#ffb300;margin-bottom:8px}
+  </style>
+</head>
+<body>
+<header id="site-header">
+  <a class="logo-link" href="/"><div class="logo-mark" id="site-logo-mark">M@SA</div>
+    <div class="logo-text"><span class="logo-main">M@SA</span><span class="logo-sub">Messelaar @ STEM Academy NPC</span></div>
+  </a>
+  <div class="header-spacer"></div>
+  <button class="admin-login-btn" onclick="window.location.href='/admin.html'">Admin</button>
+  <div style="position:relative">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <nav class="nav-dropdown" id="navMenu">
+      <a href="/">Home</a><a href="/learner.html">School</a><a href="/tertiary.html">Tertiary</a>
+      <a href="/events.html">Events</a><a href="/sessions.html">Sessions</a><a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="sessions-hero">
+  <h1>📡 Live Sessions</h1>
+  <p style="color:var(--white-dim);max-width:560px;margin:0 auto">Join online classes, workshops and tutoring sessions. Some are open to all, others require registration.</p>
+</div>
+
+<div class="page-wrap">
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterSessions('all',this)">All</button>
+    <button class="filter-btn" onclick="filterSessions('live',this)">🔴 Live Now</button>
+    <button class="filter-btn" onclick="filterSessions('scheduled',this)">Upcoming</button>
+    <button class="filter-btn" onclick="filterSessions('free_open',this)">Free &amp; Open</button>
+    <button class="filter-btn" onclick="filterSessions('paid',this)">Paid</button>
+    <button class="filter-btn" onclick="filterSessions('online',this)">Online</button>
+    <button class="filter-btn" onclick="filterSessions('in-person',this)">In-Person</button>
+  </div>
+  <div class="grid-2" id="sessions-grid">
+    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+'use strict';
+var allSessions = [];
+document.addEventListener('DOMContentLoaded', async function() {
+  await loadSiteLogo();
+  await loadSessions();
+  setInterval(loadSessions, 30000);
+});
+async function loadSessions() {
+  try {
+    allSessions = await apiFetch('/api/sessions');
+    renderSessions(allSessions);
+  } catch(e) {
+    document.getElementById('sessions-grid').innerHTML = '<p style="color:var(--error);grid-column:1/-1">' + escHtml(e.message) + '</p>';
+  }
+}
+function filterSessions(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  var f = allSessions;
+  if (type !== 'all') {
+    if (['scheduled','live','ended'].includes(type)) f = allSessions.filter(function(s){return s.status===type});
+    else if (['free_open','free_locked','paid'].includes(type)) f = allSessions.filter(function(s){return s.access_type===type});
+    else if (['online','in-person','hybrid'].includes(type)) f = allSessions.filter(function(s){return s.session_type===type});
+  }
+  renderSessions(f);
+}
+function renderSessions(sessions) {
+  var g = document.getElementById('sessions-grid');
+  var active = sessions.filter(function(s){return s.status!=='ended'&&s.status!=='cancelled'});
+  if (!active.length) {
+    g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--grey-light)"><div style="font-size:3rem;margin-bottom:16px">📡</div><p>No sessions found.</p></div>';
+    return;
+  }
+  g.innerHTML = active.map(buildCard).join('');
+}
+function buildCard(s) {
+  var start = new Date(s.scheduled_start);
+  var isLive = s.status === 'live';
+  var typeIcons = {online:'💻','in-person':'📍',hybrid:'🔀'};
+  var accessLabels = {free_open:'Free & Open',free_locked:'Free (Password)',paid:'Paid — R'+parseFloat(s.price_rands||0).toFixed(0)};
+  var accessColors = {free_open:'green',free_locked:'blue',paid:'gold'};
+  var deadline = (s.registration_open===false && s.status==='scheduled')
+    ? '<div class="deadline-warn">⚠️ Registration closed</div>' : '';
+  var btn = '';
+  if (isLive && s.session_type!=='in-person') {
+    btn = '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/session.html?id='+s.id+'\'">🔴 Join Now</button>';
+  } else if (s.status==='scheduled' && s.registration_open) {
+    if (s.access_type==='free_open') {
+      btn = '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/session.html?id='+s.id+'\'">View →</button>';
+    } else {
+      btn = '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/register-session.html?id='+s.id+'\'">Register →</button>';
+    }
+  } else if (s.status==='scheduled') {
+    btn = '<button class="btn btn-ghost btn-sm" disabled>Closed</button>';
+  }
+  return '<div class="session-card">'
+    +'<div class="sc-top">'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'
+    +(isLive?'<span><span class="live-dot"></span></span><span class="badge badge-green">LIVE</span>':'')
+    +'<span class="badge badge-grey">'+(typeIcons[s.session_type]||'📡')+' '+(s.session_type||'')+'</span>'
+    +'<span class="badge badge-'+(accessColors[s.access_type]||'grey')+'">'+(accessLabels[s.access_type]||'')+'</span>'
+    +(s.subject_name?'<span class="badge badge-blue">'+escHtml(s.subject_name)+'</span>':'')
+    +'</div>'
+    +'<div class="sc-title">'+escHtml(s.title)+'</div>'
+    +(s.description?'<div class="sc-desc">'+escHtml(s.description.substring(0,120))+'</div>':'')
+    +deadline
+    +'<div class="sc-meta">'
+    +'<span>📅 '+start.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'})+'</span>'
+    +'<span>🕐 '+start.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</span>'
+    +(s.host_name?'<span>👤 '+escHtml(s.host_name)+'</span>':'')
+    +'</div>'
+    +'</div>'
+    +'<div class="sc-footer">'
+    +'<span style="font-size:0.72rem;color:var(--grey-mid)">'+(s.spots_left||0)+' spots left</span>'
+    +btn
+    +'</div>'
+    +'</div>';
+}
+</script>
+</body>
+</html>

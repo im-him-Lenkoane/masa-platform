@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment secrets - NEVER commit this
+.env
+.pem
+.csv
+# Uploaded files (use S3 in production)
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

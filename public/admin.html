@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — M@SA</title>
+  <link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/components.css">
+  <style>
+    .admin-layout { display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - var(--header-h)); }
+    .admin-sidebar { background:var(--navy-mid); border-right:1px solid rgba(79,195,247,0.1); padding:20px 0; }
+    .admin-content { padding:32px; overflow-y:auto; }
+    .sidebar-label { font-family:var(--font-mono);font-size:0.6rem;color:var(--grey-mid);text-transform:uppercase;letter-spacing:0.15em;padding:0 20px;margin:18px 0 6px; }
+    .sidebar-btn {
+      display:flex;align-items:center;gap:10px;padding:11px 20px;
+      color:var(--grey-light);font-size:0.83rem;background:none;border:none;
+      cursor:pointer;width:100%;text-align:left;transition:all var(--transition);
+    }
+    .sidebar-btn:hover { background:rgba(79,195,247,0.07);color:var(--light-blue); }
+    .sidebar-btn.active { background:rgba(79,195,247,0.12);color:var(--light-blue);border-right:2px solid var(--light-blue); }
+    .section-panel { display:none; }
+    .section-panel.active { display:block; }
+    .stats-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:32px; }
+    .stat-card { background:var(--navy-mid);border:1px solid rgba(79,195,247,0.12);border-radius:var(--radius-lg);padding:20px;text-align:center; }
+    .stat-num { font-family:var(--font-display);font-size:2.2rem;color:var(--gold); }
+    .stat-lbl { font-size:0.75rem;color:var(--grey-light);margin-top:4px; }
+    .table-wrap { background:var(--navy-mid);border:1px solid rgba(79,195,247,0.1);border-radius:var(--radius-lg);overflow:hidden;margin-top:16px; }
+    table { width:100%;border-collapse:collapse; }
+    th { background:var(--navy-light);padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:0.62rem;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.08em; }
+    td { padding:10px 14px;border-bottom:1px solid rgba(79,195,247,0.06);font-size:0.82rem;color:var(--white-dim);vertical-align:middle; }
+    tr:hover td { background:rgba(79,195,247,0.03); }
+    tr:last-child td { border-bottom:none; }
+    .form-row { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    @media(max-width:900px){ .admin-layout{grid-template-columns:1fr} .admin-sidebar{display:none} .form-row{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="site-header">
+  <a class="logo-link" href="/"><div class="logo-mark" id="site-logo-mark">M@SA</div>
+    <div class="logo-text"><span class="logo-main">M@SA</span><span class="logo-sub">Messelaar @ STEM Academy NPC</span></div>
+  </a>
+  <div class="header-spacer"></div>
+  <span id="admin-user-label" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--grey-light)"></span>
+  <button class="btn btn-ghost btn-sm" id="logout-btn" onclick="doLogout()" style="display:none">Sign Out</button>
+  <div style="position:relative">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <nav class="nav-dropdown" id="navMenu">
+      <a href="/">🏠 Home</a><a href="/learner.html">🎓 School Learner</a>
+      <a href="/tertiary.html">🏛️ Tertiary</a><a href="/events.html">📅 Events</a><a href="/sessions.html">📡 Sessions</a>
+    </nav>
+  </div>
+</header>
+
+<!-- LOGIN VIEW -->
+<div id="login-view">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>Admin Access</h2>
+    <p>Restricted to M@SA administrators and content developers only.</p>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="admin@masa.org.za" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In →</button>
+    <p id="login-error" style="color:var(--error);font-size:0.78rem;margin-top:12px;display:none"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashboard-view" style="display:none">
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-label">Overview</div>
+      <button class="sidebar-btn active" onclick="showPanel('dashboard', this)">📊 Dashboard</button>
+
+      <div class="sidebar-label">Content</div>
+      <button class="sidebar-btn" onclick="showPanel('content-video', this)">▶️ Videos</button>
+      <button class="sidebar-btn" onclick="showPanel('content-files', this)">📄 Files & PDFs</button>
+      <button class="sidebar-btn" onclick="showPanel('content-notes', this)">📝 Notes</button>
+      <button class="sidebar-btn" onclick="showPanel('quizzes', this)">🎯 Quizzes</button>
+      <button class="sidebar-btn" onclick="showPanel('comments', this)">💬 Comments</button>
+
+      <div class="sidebar-label">Site</div>
+      <button class="sidebar-btn" onclick="showPanel('events', this)">📅 Events</button>
+      <button class="sidebar-btn" onclick="showPanel('sponsors', this)">🤝 Sponsors</button>
+      <button class="sidebar-btn" onclick="showPanel('programs', this)">🚀 Programs</button>
+      <button class="sidebar-btn" onclick="showPanel('publications', this)">📖 Publications</button>
+      <button class="sidebar-btn" onclick="showPanel('sessions', this)">📡 Sessions</button>
+      <button class="sidebar-btn" onclick="showPanel('sessions', this)">📡 Sessions</button>
+      <button class="sidebar-btn" onclick="showPanel('branding', this)">🎨 Branding & Logo</button>
+
+      <div class="sidebar-label">Admin</div>
+      <button class="sidebar-btn" onclick="showPanel('users', this)">👥 Admin Users</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div class="section-panel active" id="panel-dashboard">
+        <h2 style="margin-bottom:24px">Dashboard</h2>
+        <div class="stats-grid" id="stats-grid">
+          <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+        </div>
+        <p style="color:var(--grey-light);font-size:0.82rem">Welcome to the M@SA admin panel. Use the sidebar to manage content, events, sponsors, and more.</p>
+      </div>
+
+      <!-- VIDEOS -->
+      <div class="section-panel" id="panel-content-video">
+        <h2 style="margin-bottom:8px">Upload YouTube Video</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Add a YouTube video link to a topic. The video stays on YouTube — only the link is stored.</p>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="vid-subject" onchange="loadTopicsForSelect('vid-topic', this.value)">
+                <option value="">Select subject...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Topic</label>
+              <select id="vid-topic"><option value="">Select topic...</option></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Video Title</label>
+            <input type="text" id="vid-title" placeholder="e.g. Newton's Laws — Introduction">
+          </div>
+          <div class="form-group">
+            <label>YouTube URL</label>
+            <input type="url" id="vid-url" placeholder="https://www.youtube.com/watch?v=...">
+            <div class="hint">Paste the full YouTube URL. Private or age-restricted videos won't work.</div>
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea id="vid-desc" placeholder="Brief description of what this video covers..." style="min-height:80px"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Transcript (optional)</label>
+            <textarea id="vid-transcript" placeholder="Paste video transcript here for accessibility and offline reading..." style="min-height:100px"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="uploadVideo()">Add Video →</button>
+        </div>
+      </div>
+
+      <!-- FILES -->
+      <div class="section-panel" id="panel-content-files">
+        <h2 style="margin-bottom:8px">Upload File</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Upload PDFs, PowerPoint slides, or images to a topic.</p>
+        <div class="card" style="padding:24px">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="file-subject" onchange="loadTopicsForSelect('file-topic', this.value)">
+                <option value="">Select subject...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Topic</label>
+              <select id="file-topic"><option value="">Select topic...</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Resource Type</label>
+              <select id="file-type">
+                <option value="pdf">PDF Notes / Study Guide</option>
+                <option value="slides">Slides / Presentation</option>
+                <option value="image">Diagram / Image</option>
+                <option value="practice_questions">Practice Questions</option>
+                <option value="exam_prep">Exam Preparation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" id="file-title" placeholder="e.g. Chapter 3 Summary Notes">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <input type="text" id="file-desc" placeholder="Brief description">
+          </div>
+          <div class="form-group">
+            <label>File (PDF, PPT, PPTX, PNG, JPG, WEBP)</label>
+            <input type="file" id="file-input" accept=".pdf,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.gif" style="padding:8px;cursor:pointer">
+            <div class="hint">Max file size: 50MB</div>
+          </div>
+          <button class="btn btn-primary" onclick="uploadFile()">Upload File →</button>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="section-panel" id="panel-content-notes">
+        <h2 style="margin-bottom:8px">Add Study Notes</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Write inline text notes directly into a topic. Great for summaries and explanations.</p>
+        <div class="card" style="padding:24px">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="notes-subject" onchange="loadTopicsForSelect('notes-topic', this.value)">
+                <option value="">Select subject...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Topic</label>
+              <select id="notes-topic"><option value="">Select topic...</option></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes Title</label>
+            <input type="text" id="notes-title-inp" placeholder="e.g. Key Definitions — Electrostatics">
+          </div>
+          <div class="form-group">
+            <label>Notes Content</label>
+            <textarea id="notes-content-inp" placeholder="Write study notes here..." style="min-height:200px;font-family:var(--font-mono);font-size:0.82rem;line-height:1.7"></textarea>
+            <div class="hint">Plain text. Use line breaks to structure content.</div>
+          </div>
+          <button class="btn btn-primary" onclick="saveNotes()">Save Notes →</button>
+        </div>
+      </div>
+
+      <!-- QUIZZES -->
+      <div class="section-panel" id="panel-quizzes">
+        <h2 style="margin-bottom:8px">Quiz Builder</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Create quizzes for topics. Supports Multiple Choice, True/False, and Matching.</p>
+        <div class="card" style="padding:24px;margin-bottom:20px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Step 1: Create Quiz</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="quiz-subject" onchange="loadTopicsForSelect('quiz-topic', this.value)">
+                <option value="">Select subject...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Topic</label>
+              <select id="quiz-topic"><option value="">Select topic...</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quiz Title</label>
+              <input type="text" id="quiz-name" placeholder="e.g. Newton's Laws Quiz">
+            </div>
+            <div class="form-group">
+              <label>Pass Mark (%)</label>
+              <input type="number" id="quiz-pass" value="50" min="0" max="100">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createQuiz()">Create Quiz →</button>
+        </div>
+
+        <div class="card" style="padding:24px" id="add-question-card" style="display:none">
+          <h3 style="font-size:0.9rem;margin-bottom:4px">Step 2: Add Questions</h3>
+          <p style="font-size:0.75rem;color:var(--grey-light);margin-bottom:16px" id="quiz-created-label"></p>
+          <div class="form-group">
+            <label>Question Type</label>
+            <select id="q-type" onchange="renderQuestionForm()">
+              <option value="multiple_choice">Multiple Choice</option>
+              <option value="true_false">True / False</option>
+              <option value="matching">Matching</option>
+            </select>
+          </div>
+          <div id="question-form-area"></div>
+          <button class="btn btn-primary" onclick="addQuestion()">Add Question →</button>
+          <button class="btn btn-gold" style="margin-left:10px" onclick="finishQuiz()">✓ Done</button>
+        </div>
+      </div>
+
+      <!-- COMMENTS -->
+      <div class="section-panel" id="panel-comments">
+        <h2 style="margin-bottom:24px">Comment Moderation</h2>
+        <div id="comments-list"><div class="loading-state"><div class="spinner"></div></div></div>
+        <div style="margin-top:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:12px">Block an IP Address</h3>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <div class="form-group" style="flex:1;margin:0">
+              <label>IP Address</label>
+              <input type="text" id="block-ip-input" placeholder="e.g. 123.456.789.0">
+            </div>
+            <div class="form-group" style="flex:2;margin:0">
+              <label>Reason</label>
+              <input type="text" id="block-ip-reason" placeholder="Reason for blocking">
+            </div>
+            <button class="btn btn-danger" onclick="blockIP()">Block IP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="section-panel" id="panel-events">
+        <h2 style="margin-bottom:24px">Events</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Add New Event</h3>
+          <div class="form-group"><label>Title</label><input type="text" id="ev-title" placeholder="Event title"></div>
+          <div class="form-group"><label>Description</label><textarea id="ev-desc" style="min-height:80px" placeholder="Event description"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Date &amp; Time</label><input type="datetime-local" id="ev-date"></div>
+            <div class="form-group"><label>Type</label>
+              <select id="ev-type"><option value="in-person">In-Person</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label>Location / Link</label><input type="text" id="ev-location" placeholder="e.g. Messelaar Community Centre or Zoom link"></div>
+          <button class="btn btn-primary" onclick="saveEvent()">Save Event →</button>
+        </div>
+        <div id="events-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- SPONSORS -->
+      <div class="section-panel" id="panel-sponsors">
+        <h2 style="margin-bottom:24px">Sponsors</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Add Sponsor</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Sponsor Name</label><input type="text" id="sp-name" placeholder="Company name"></div>
+            <div class="form-group"><label>Website URL</label><input type="url" id="sp-url" placeholder="https://..."></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tier</label>
+              <select id="sp-tier"><option value="standard">Standard</option><option value="silver">Silver</option><option value="gold">Gold</option><option value="platinum">Platinum</option></select>
+            </div>
+            <div class="form-group"><label>Logo Image (PNG, JPG, SVG)</label>
+              <input type="file" id="sp-logo" accept=".png,.jpg,.jpeg,.svg,.webp" style="padding:8px;cursor:pointer">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSponsor()">Add Sponsor →</button>
+        </div>
+        <div id="sponsors-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- PROGRAMS -->
+      <div class="section-panel" id="panel-programs">
+        <h2 style="margin-bottom:24px">Programs &amp; Projects</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Add Program</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input type="text" id="pr-title" placeholder="Program title"></div>
+            <div class="form-group"><label>Icon (emoji)</label><input type="text" id="pr-icon" placeholder="🔬" maxlength="4"></div>
+          </div>
+          <div class="form-group"><label>Description</label><textarea id="pr-desc" style="min-height:80px"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Status</label>
+              <select id="pr-status"><option value="ongoing">Ongoing</option><option value="upcoming">Upcoming</option><option value="completed">Completed</option></select>
+            </div>
+            <div class="form-group"><label>Featured?</label>
+              <select id="pr-featured"><option value="false">No</option><option value="true">Yes</option></select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveProgram()">Save Program →</button>
+        </div>
+        <div id="programs-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- PUBLICATIONS -->
+      <div class="section-panel" id="panel-publications">
+        <h2 style="margin-bottom:24px">Publications</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Add Publication</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input type="text" id="pub-title" placeholder="Publication title"></div>
+            <div class="form-group"><label>Type</label>
+              <select id="pub-type"><option value="report">Report</option><option value="newsletter">Newsletter</option><option value="research">Research Paper</option><option value="guide">Guide</option><option value="other">Other</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label>Description</label><textarea id="pub-desc" style="min-height:80px"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Upload PDF (optional)</label>
+              <input type="file" id="pub-file" accept=".pdf" style="padding:8px;cursor:pointer">
+            </div>
+            <div class="form-group"><label>External URL (optional)</label>
+              <input type="url" id="pub-url" placeholder="https://...">
+            </div>
+          </div>
+          <div class="form-group"><label>Published Date</label><input type="date" id="pub-date"></div>
+          <button class="btn btn-primary" onclick="savePublication()">Save Publication →</button>
+        </div>
+        <div id="publications-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- SESSIONS -->
+      <div class="section-panel" id="panel-sessions">
+        <h2 style="margin-bottom:8px">Sessions</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Create and manage live sessions. Online/hybrid events auto-create sessions. Paid sessions use bank transfer verification.</p>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Create New Session</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input type="text" id="sess-title" placeholder="e.g. Grade 11 Maths — Trig Live Class"></div>
+            <div class="form-group"><label>Subject (optional)</label><select id="sess-subject"><option value="">No subject link</option></select></div>
+          </div>
+          <div class="form-group"><label>Description</label><textarea id="sess-desc" style="min-height:70px" placeholder="What this session covers..."></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Session Type</label><select id="sess-type"><option value="online">Online</option><option value="in-person">In-Person</option><option value="hybrid">Hybrid</option></select></div>
+            <div class="form-group"><label>Access Type</label><select id="sess-access" onchange="togglePaidFields()"><option value="free_open">Free — Open</option><option value="free_locked">Free — Locked (password)</option><option value="paid">Paid (bank transfer)</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Start Date &amp; Time</label><input type="datetime-local" id="sess-start"></div>
+            <div class="form-group"><label>End Date &amp; Time</label><input type="datetime-local" id="sess-end"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Max Participants</label><input type="number" id="sess-max" value="100" min="1"></div>
+            <div class="form-group" id="sess-price-wrap" style="display:none"><label>Price (Rands)</label><input type="number" id="sess-price" value="0" min="0" step="0.01"></div>
+          </div>
+          <div id="sess-password-row" style="display:none">
+            <div class="form-group"><label>Session Password</label><input type="password" id="sess-password" placeholder="Password for locked session"></div>
+          </div>
+          <div id="sess-bank-rows" style="display:none">
+            <h4 style="font-size:0.82rem;color:var(--gold);margin:16px 0 12px">Bank Details for Payment</h4>
+            <div class="form-row">
+              <div class="form-group"><label>Bank Name</label><input type="text" id="sess-bank-name" placeholder="e.g. Capitec Bank"></div>
+              <div class="form-group"><label>Account Holder Name</label><input type="text" id="sess-bank-acc-name" placeholder="Messelaar STEM Academy NPC"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Account Number</label><input type="text" id="sess-bank-acc-no" placeholder="Account number"></div>
+              <div class="form-group"><label>Branch Code</label><input type="text" id="sess-bank-branch" placeholder="e.g. 470010"></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createSession()">Create Session →</button>
+        </div>
+        <div id="sessions-admin-list"><div class="loading-state"><div class="spinner"></div></div></div>
+        <div class="modal-overlay hidden" id="participants-modal">
+          <div class="modal-box" style="max-width:820px;width:95%;max-height:90vh;overflow-y:auto">
+            <div class="modal-header">
+              <h3 id="participants-modal-title" style="font-size:0.9rem"></h3>
+              <button class="modal-close" onclick="closeModal('participants-modal')">✕</button>
+            </div>
+            <div id="participants-modal-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SESSIONS -->
+      <div class="section-panel" id="panel-sessions">
+        <h2 style="margin-bottom:8px">Sessions</h2>
+        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Create and manage online, in-person and hybrid sessions. Online/hybrid events auto-create a session.</p>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Create New Session</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input type="text" id="ses-title" placeholder="Session title"></div>
+            <div class="form-group"><label>Type</label><select id="ses-type"><option value="online">Online</option><option value="in-person">In-Person</option><option value="hybrid">Hybrid</option></select></div>
+          </div>
+          <div class="form-group"><label>Description</label><textarea id="ses-desc" style="min-height:70px"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Start Date &amp; Time</label><input type="datetime-local" id="ses-start"></div>
+            <div class="form-group"><label>End Date &amp; Time</label><input type="datetime-local" id="ses-end"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Access Type</label><select id="ses-access" onchange="toggleSessionOptions()"><option value="free_open">Free &amp; Open</option><option value="free_locked">Free (Password Protected)</option><option value="paid">Paid</option></select></div>
+            <div class="form-group"><label>Max Participants</label><input type="number" id="ses-max" value="100" min="1"></div>
+          </div>
+          <div id="ses-password-section" style="display:none">
+            <div class="form-group"><label>Session Password</label><input type="text" id="ses-password" placeholder="Password students must enter"></div>
+          </div>
+          <div id="ses-payment-section" style="display:none">
+            <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--light-blue);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Payment Details</div>
+            <div class="form-row">
+              <div class="form-group"><label>Price (Rands)</label><input type="number" id="ses-price" value="0" min="0" step="0.01"></div>
+              <div class="form-group"><label>Bank Name</label><input type="text" id="ses-bank-name" placeholder="e.g. Standard Bank"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Account Name</label><input type="text" id="ses-bank-acc-name" placeholder="M@SA NPC"></div>
+              <div class="form-group"><label>Account Number</label><input type="text" id="ses-bank-acc-no"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Branch Code</label><input type="text" id="ses-branch-code"></div>
+              <div class="form-group"><label>Subject (optional)</label><select id="ses-subject"><option value="">None</option></select></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSession()">Create Session 2192</button>
+        </div>
+        <div id="sessions-list"><div class="loading-state"><div class="spinner"></div></div></div>
+        <div id="participants-panel" style="display:none;margin-top:24px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <h3 style="font-size:0.9rem;margin:0">Participants</h3>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('participants-panel').style.display='none'">Close</button>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:16px;align-items:flex-end">
+            <div class="form-group" style="flex:1;margin:0"><label>Scan Class ID (face-to-face admit)</label><input type="text" id="admit-classid" placeholder="Enter or scan Class ID"></div>
+            <button class="btn btn-primary" onclick="admitParticipant()">Admit</button>
+          </div>
+          <div id="participants-table"></div>
+        </div>
+      </div>
+
+      <!-- BRANDING -->
+      <div class="section-panel" id="panel-branding">
+        <h2 style="margin-bottom:24px">Branding &amp; Logo</h2>
+        <div class="card" style="padding:24px;max-width:480px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Site Logo</h3>
+          <p style="font-size:0.8rem;color:var(--grey-light);margin-bottom:16px">Upload a new logo image. It will replace the M@SA text mark in the header across all pages. Recommended: SVG or PNG with transparent background, square format.</p>
+          <div id="current-logo-preview" style="margin-bottom:16px"></div>
+          <div class="form-group">
+            <label>Logo File (PNG, SVG, JPG)</label>
+            <input type="file" id="logo-file" accept=".png,.svg,.jpg,.jpeg,.webp" style="padding:8px;cursor:pointer">
+          </div>
+          <button class="btn btn-primary" onclick="uploadLogo()">Upload Logo →</button>
+          <button class="btn btn-ghost" style="margin-left:10px" onclick="resetLogo()">Reset to Default</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="section-panel" id="panel-users">
+        <h2 style="margin-bottom:24px">Admin Users</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px;max-width:600px">
+          <h3 style="font-size:0.9rem;margin-bottom:16px">Add Admin User</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Full Name</label><input type="text" id="usr-name" placeholder="Full name"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="usr-email" placeholder="email@masa.org.za"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Password</label><input type="password" id="usr-pass" placeholder="Min 8 characters"></div>
+            <div class="form-group"><label>Role</label>
+              <select id="usr-role"><option value="content_developer">Content Developer</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createUser()">Create User →</button>
+        </div>
+        <div id="users-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="/js/app.js"></script>
+<script>
+'use strict';
+
+let currentSession = null;
+let currentQuizId  = null;
+let allSubjects    = [];
+
+// ── AUTH ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadSiteLogo();
+  try {
+    const data = await apiFetch('/api/auth/me');
+    if (data.user) loginSuccess(data.user);
+  } catch { /* show login */ }
+});
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    const data = await apiFetch('/api/auth/login', { method:'POST', body:{ email, password:pass } });
+    loginSuccess(data.user);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function loginSuccess(user) {
+  currentSession = user;
+  document.getElementById('login-view').style.display    = 'none';
+  document.getElementById('dashboard-view').style.display = 'block';
+  document.getElementById('admin-user-label').textContent = user.full_name + ' (' + user.role + ')';
+  document.getElementById('logout-btn').style.display     = 'inline-flex';
+  initDashboard();
+}
+
+async function doLogout() {
+  await apiFetch('/api/auth/logout', { method:'POST' });
+  location.reload();
+}
+
+// ── PANEL SWITCHING ───────────────────────────────
+function showPanel(name, btn) {
+  document.querySelectorAll('.section-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.sidebar-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  var loaders = {
+    'dashboard':      loadDashboardStats,
+    'comments':       loadCommentsList,
+    'events':         loadEventsList,
+    'sponsors':       loadSponsorsList,
+    'programs':       loadProgramsList,
+    'publications':   loadPublicationsList,
+    'users':          loadUsersList,
+    'content-video':  function() { loadSubjectsForSelects(['vid-subject']); },
+    'content-files':  function() { loadSubjectsForSelects(['file-subject']); },
+    'content-notes':  function() { loadSubjectsForSelects(['notes-subject']); },
+    'quizzes':        function() { loadSubjectsForSelects(['quiz-subject']); renderQuestionForm(); },
+    'sessions':       function() { loadSessionsList(); loadSubjectsForSelects(['sess-subject']); },
+    'branding':       loadBrandingPreview,
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+// ── INIT DASHBOARD ────────────────────────────────
+async function initDashboard() {
+  await loadSubjectsAll();
+  loadDashboardStats();
+}
+
+async function loadSubjectsAll() {
+  try {
+    allSubjects = await apiFetch('/api/subjects');
+  } catch {}
+}
+
+async function loadDashboardStats() {
+  try {
+    var stats = await apiFetch('/api/admin/dashboard');
+    document.getElementById('stats-grid').innerHTML =
+      statCard('📚', stats.subjects, 'Subjects') +
+      statCard('📋', stats.topics, 'Topics') +
+      statCard('🗂️', stats.resources, 'Resources') +
+      statCard('📅', stats.events, 'Events') +
+      statCard('🤝', stats.sponsors, 'Sponsors') +
+      statCard('🚀', stats.programs, 'Programs');
+  } catch {}
+}
+function statCard(icon, num, label) {
+  return '<div class="stat-card"><div style="font-size:1.8rem;margin-bottom:8px">' + icon + '</div><div class="stat-num">' + (num || 0) + '</div><div class="stat-lbl">' + label + '</div></div>';
+}
+
+// ── SUBJECTS FOR SELECTS ──────────────────────────
+function loadSubjectsForSelects(selectIds) {
+  selectIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '<option value="">Select subject...</option>' +
+      allSubjects.map(function(s) {
+        var label = s.path_type === 'school' ? 'Grade ' + (s.grade_id || '?') + ' — ' + s.name : 'Tertiary — ' + s.name;
+        return '<option value="' + escHtml(s.id) + '">' + escHtml(label) + '</option>';
+      }).join('');
+  });
+}
+
+async function loadTopicsForSelect(topicSelectId, subjectId) {
+  var el = document.getElementById(topicSelectId);
+  if (!el || !subjectId) return;
+  el.innerHTML = '<option value="">Loading...</option>';
+  try {
+    var topics = await apiFetch('/api/topics?subject_id=' + subjectId);
+    el.innerHTML = '<option value="">Select topic...</option>' +
+      topics.map(function(t) { return '<option value="' + escHtml(t.id) + '">' + escHtml(t.title) + '</option>'; }).join('');
+  } catch { el.innerHTML = '<option value="">Failed to load</option>'; }
+}
+
+// ── UPLOAD VIDEO ──────────────────────────────────
+async function uploadVideo() {
+  var topicId    = document.getElementById('vid-topic').value;
+  var title      = document.getElementById('vid-title').value.trim();
+  var youtubeUrl = document.getElementById('vid-url').value.trim();
+  var desc       = document.getElementById('vid-desc').value.trim();
+  var transcript = document.getElementById('vid-transcript').value.trim();
+  if (!topicId || !title || !youtubeUrl) { showToast('Topic, title and YouTube URL are required.', 'error'); return; }
+  try {
+    await apiFetch('/api/resources/video', { method:'POST', body:{ topic_id:topicId, title, youtube_url:youtubeUrl, description:desc, transcript } });
+    showToast('Video added successfully!', 'success');
+    document.getElementById('vid-title').value = '';
+    document.getElementById('vid-url').value   = '';
+    document.getElementById('vid-desc').value  = '';
+    document.getElementById('vid-transcript').value = '';
+  } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+}
+
+// ── UPLOAD FILE ───────────────────────────────────
+async function uploadFile() {
+  var topicId = document.getElementById('file-topic').value;
+  var type    = document.getElementById('file-type').value;
+  var title   = document.getElementById('file-title').value.trim();
+  var desc    = document.getElementById('file-desc').value.trim();
+  var fileEl  = document.getElementById('file-input');
+  if (!topicId || !title || !fileEl.files[0]) { showToast('Topic, title and file are required.', 'error'); return; }
+  var fd = new FormData();
+  fd.append('topic_id', topicId); fd.append('type', type);
+  fd.append('title', title); fd.append('description', desc);
+  fd.append('file', fileEl.files[0]);
+  try {
+    await apiFetch('/api/resources/file', { method:'POST', body:fd });
+    showToast('File uploaded successfully!', 'success');
+    fileEl.value = ''; document.getElementById('file-title').value = '';
+  } catch (err) { showToast('Upload failed: ' + err.message, 'error'); }
+}
+
+// ── SAVE NOTES ────────────────────────────────────
+async function saveNotes() {
+  var topicId = document.getElementById('notes-topic').value;
+  var title   = document.getElementById('notes-title-inp').value.trim();
+  var content = document.getElementById('notes-content-inp').value.trim();
+  if (!topicId || !title || !content) { showToast('Topic, title and content required.', 'error'); return; }
+  try {
+    await apiFetch('/api/resources/notes', { method:'POST', body:{ topic_id:topicId, title, content } });
+    showToast('Notes saved!', 'success');
+    document.getElementById('notes-title-inp').value   = '';
+    document.getElementById('notes-content-inp').value = '';
+  } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+}
+
+// ── CREATE QUIZ ───────────────────────────────────
+async function createQuiz() {
+  var topicId  = document.getElementById('quiz-topic').value;
+  var title    = document.getElementById('quiz-name').value.trim();
+  var passMark = document.getElementById('quiz-pass').value;
+  if (!topicId || !title) { showToast('Topic and title required.', 'error'); return; }
+  try {
+    var quiz = await apiFetch('/api/quizzes', { method:'POST', body:{ topic_id:topicId, title, pass_mark_percent:parseInt(passMark) } });
+    currentQuizId = quiz.id;
+    document.getElementById('quiz-created-label').textContent = 'Adding questions to: ' + title + ' (ID: ' + quiz.id + ')';
+    document.getElementById('add-question-card').style.display = 'block';
+    renderQuestionForm();
+    showToast('Quiz created! Now add questions.', 'success');
+  } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+}
+
+function renderQuestionForm() {
+  var type = document.getElementById('q-type') ? document.getElementById('q-type').value : 'multiple_choice';
+  var area = document.getElementById('question-form-area');
+  if (!area) return;
+  if (type === 'true_false') {
+    area.innerHTML =
+      '<div class="form-group"><label>Question</label><textarea id="q-text" style="min-height:70px" placeholder="True or False: ..."></textarea></div>' +
+      '<div class="form-group"><label>Correct Answer</label><select id="tf-answer"><option value="true">True</option><option value="false">False</option></select></div>';
+  } else if (type === 'matching') {
+    area.innerHTML =
+      '<div class="form-group"><label>Question / Instruction</label><input type="text" id="q-text" placeholder="Match each term to its definition"></div>' +
+      '<p style="font-size:0.78rem;color:var(--grey-light);margin-bottom:12px">Enter term and matching definition pairs:</p>' +
+      '<div id="match-pairs">' + matchPairRow(0) + matchPairRow(1) + matchPairRow(2) + '</div>' +
+      '<button class="btn btn-ghost btn-sm" onclick="addMatchPair()" style="margin-top:8px">+ Add Pair</button>';
+  } else {
+    area.innerHTML =
+      '<div class="form-group"><label>Question</label><textarea id="q-text" style="min-height:70px" placeholder="Question text..."></textarea></div>' +
+      '<p style="font-size:0.78rem;color:var(--grey-light);margin-bottom:12px">Options (mark the correct one):</p>' +
+      '<div id="mcq-options">' + mcqRow(0) + mcqRow(1) + mcqRow(2) + mcqRow(3) + '</div>' +
+      '<button class="btn btn-ghost btn-sm" onclick="addMcqOption()" style="margin-top:8px">+ Add Option</button>';
+  }
+}
+
+function matchPairRow(i) {
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">' +
+    '<input type="text" placeholder="Term ' + (i+1) + '" id="match-term-' + i + '" style="font-size:0.82rem">' +
+    '<input type="text" placeholder="Definition ' + (i+1) + '" id="match-def-' + i + '" style="font-size:0.82rem">' +
+    '</div>';
+}
+function mcqRow(i) {
+  return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+    '<input type="radio" name="correct-opt" value="' + i + '" id="opt-correct-' + i + '">' +
+    '<input type="text" placeholder="Option ' + (i+1) + '" id="opt-text-' + i + '" style="flex:1;font-size:0.82rem">' +
+    '</div>';
+}
+var matchPairCount = 3;
+var mcqCount = 4;
+function addMatchPair() {
+  document.getElementById('match-pairs').insertAdjacentHTML('beforeend', matchPairRow(matchPairCount++));
+}
+function addMcqOption() {
+  document.getElementById('mcq-options').insertAdjacentHTML('beforeend', mcqRow(mcqCount++));
+}
+
+async function addQuestion() {
+  if (!currentQuizId) { showToast('Create a quiz first.', 'error'); return; }
+  var type = document.getElementById('q-type').value;
+  var text = document.getElementById('q-text').value.trim();
+  if (!text) { showToast('Question text required.', 'error'); return; }
+  var body = { type, question_text: text, options: [] };
+
+  if (type === 'true_false') {
+    var ans = document.getElementById('tf-answer').value;
+    body.options = [{ option_text:'True', is_correct: ans==='true' }, { option_text:'False', is_correct: ans==='false' }];
+  } else if (type === 'matching') {
+    for (var i = 0; i < matchPairCount; i++) {
+      var term = document.getElementById('match-term-' + i);
+      var def  = document.getElementById('match-def-' + i);
+      if (term && term.value.trim() && def && def.value.trim()) {
+        body.options.push({ option_text: term.value.trim(), is_correct: false, sort_order: i * 2 });
+        body.options.push({ option_text: def.value.trim(),  is_correct: true,  sort_order: i * 2 + 1, match_pair: term.value.trim() });
+      }
+    }
+  } else {
+    var correctIdx = document.querySelector('input[name="correct-opt"]:checked');
+    for (var j = 0; j < mcqCount; j++) {
+      var optEl = document.getElementById('opt-text-' + j);
+      if (optEl && optEl.value.trim()) {
+        body.options.push({ option_text: optEl.value.trim(), is_correct: correctIdx && parseInt(correctIdx.value) === j });
+      }
+    }
+    if (!correctIdx) { showToast('Please select the correct answer.', 'error'); return; }
+  }
+
+  try {
+    await apiFetch('/api/quizzes/' + currentQuizId + '/questions', { method:'POST', body });
+    showToast('Question added!', 'success');
+    document.getElementById('q-text').value = '';
+    renderQuestionForm();
+  } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+}
+
+function finishQuiz() {
+  currentQuizId = null;
+  document.getElementById('add-question-card').style.display = 'none';
+  showToast('Quiz complete!', 'success');
+}
+
+// ── COMMENTS ─────────────────────────────────────
+async function loadCommentsList() {
+  try {
+    var comments = await apiFetch('/api/comments/admin/all');
+    var html = '<div class="table-wrap"><table>' +
+      '<thead><tr><th>Author</th><th>Comment</th><th>Resource</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+    if (!comments.length) {
+      html += '<tr><td colspan="5" style="text-align:center;color:var(--grey-light)">No comments yet.</td></tr>';
+    } else {
+      comments.forEach(function(c) {
+        html += '<tr>' +
+          '<td>' + escHtml(c.author_name) + '</td>' +
+          '<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(c.content) + '</td>' +
+          '<td style="font-size:0.75rem;color:var(--grey-light)">' + escHtml(c.resource_title || '') + '</td>' +
+          '<td style="font-size:0.75rem">' + formatDate(c.created_at) + '</td>' +
+          '<td><button class="btn btn-danger btn-sm" onclick="deleteComment(\'' + escHtml(c.id) + '\')">Delete</button>' +
+          (c.ip_address ? ' <button class="btn btn-ghost btn-sm" onclick="blockIPFromComment(\'' + escHtml(c.ip_address) + '\')">Block IP</button>' : '') +
+          '</td></tr>';
+      });
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('comments-list').innerHTML = html;
+  } catch (err) { document.getElementById('comments-list').innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>'; }
+}
+
+async function deleteComment(id) {
+  if (!confirm('Delete this comment?')) return;
+  try { await apiFetch('/api/comments/' + id, { method:'DELETE' }); showToast('Deleted.', 'success'); loadCommentsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function blockIP() {
+  var ip = document.getElementById('block-ip-input').value.trim();
+  var reason = document.getElementById('block-ip-reason').value.trim();
+  if (!ip) { showToast('Enter an IP address.', 'error'); return; }
+  try { await apiFetch('/api/comments/block-ip', { method:'POST', body:{ ip_address:ip, reason } }); showToast('IP blocked.', 'success'); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function blockIPFromComment(ip) {
+  if (!confirm('Block IP: ' + ip + '?')) return;
+  document.getElementById('block-ip-input').value = ip;
+  await blockIP();
+}
+
+// ── EVENTS ────────────────────────────────────────
+async function saveEvent() {
+  var body = {
+    title: document.getElementById('ev-title').value.trim(),
+    description: document.getElementById('ev-desc').value.trim(),
+    event_date: document.getElementById('ev-date').value,
+    event_type: document.getElementById('ev-type').value,
+    location: document.getElementById('ev-location').value.trim(),
+  };
+  if (!body.title || !body.event_date) { showToast('Title and date required.', 'error'); return; }
+  try { await apiFetch('/api/events', { method:'POST', body }); showToast('Event saved!', 'success'); loadEventsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function loadEventsList() {
+  try {
+    var events = await apiFetch('/api/events');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Date</th><th>Type</th><th>Actions</th></tr></thead><tbody>';
+    events.forEach(function(e) {
+      html += '<tr><td>' + escHtml(e.title) + '</td><td>' + formatDate(e.event_date) + '</td><td>' + escHtml(e.event_type) + '</td>' +
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteEvent(\'' + escHtml(e.id) + '\')">Delete</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('events-list').innerHTML = html;
+  } catch {}
+}
+
+async function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  try { await apiFetch('/api/events/' + id, { method:'DELETE' }); showToast('Deleted.', 'success'); loadEventsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+// ── SPONSORS ─────────────────────────────────────
+async function saveSponsor() {
+  var name  = document.getElementById('sp-name').value.trim();
+  var url   = document.getElementById('sp-url').value.trim();
+  var tier  = document.getElementById('sp-tier').value;
+  var logo  = document.getElementById('sp-logo').files[0];
+  if (!name) { showToast('Sponsor name required.', 'error'); return; }
+  var fd = new FormData();
+  fd.append('name', name); fd.append('website_url', url); fd.append('tier', tier);
+  if (logo) fd.append('logo', logo);
+  try { await apiFetch('/api/sponsors', { method:'POST', body:fd }); showToast('Sponsor added!', 'success'); loadSponsorsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function loadSponsorsList() {
+  try {
+    var sponsors = await apiFetch('/api/sponsors');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Tier</th><th>Website</th><th>Logo</th><th>Actions</th></tr></thead><tbody>';
+    sponsors.forEach(function(s) {
+      html += '<tr><td>' + escHtml(s.name) + '</td><td>' + escHtml(s.tier) + '</td>' +
+        '<td><a href="' + escHtml(s.website_url||'#') + '" target="_blank" style="font-size:0.78rem">' + escHtml(s.website_url||'—') + '</a></td>' +
+        '<td>' + (s.logo_path ? '<img src="' + escHtml(s.logo_path) + '" style="max-height:30px">' : '—') + '</td>' +
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteSponsor(\'' + escHtml(s.id) + '\')">Remove</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('sponsors-list').innerHTML = html;
+  } catch {}
+}
+
+async function deleteSponsor(id) {
+  if (!confirm('Remove sponsor?')) return;
+  try { await apiFetch('/api/sponsors/' + id, { method:'DELETE' }); showToast('Removed.', 'success'); loadSponsorsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+// ── PROGRAMS ─────────────────────────────────────
+async function saveProgram() {
+  var body = {
+    title: document.getElementById('pr-title').value.trim(),
+    description: document.getElementById('pr-desc').value.trim(),
+    icon: document.getElementById('pr-icon').value.trim(),
+    status: document.getElementById('pr-status').value,
+    is_featured: document.getElementById('pr-featured').value === 'true',
+  };
+  if (!body.title) { showToast('Title required.', 'error'); return; }
+  try { await apiFetch('/api/programs', { method:'POST', body }); showToast('Program saved!', 'success'); loadProgramsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function loadProgramsList() {
+  try {
+    var programs = await apiFetch('/api/programs');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Status</th><th>Featured</th><th>Actions</th></tr></thead><tbody>';
+    programs.forEach(function(p) {
+      html += '<tr><td>' + escHtml(p.icon||'') + ' ' + escHtml(p.title) + '</td><td>' + escHtml(p.status) + '</td>' +
+        '<td>' + (p.is_featured ? '✓' : '—') + '</td>' +
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteProgram(\'' + escHtml(p.id) + '\')">Delete</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('programs-list').innerHTML = html;
+  } catch {}
+}
+
+async function deleteProgram(id) {
+  if (!confirm('Delete this program?')) return;
+  try { await apiFetch('/api/programs/' + id, { method:'DELETE' }); showToast('Deleted.', 'success'); loadProgramsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+// ── PUBLICATIONS ──────────────────────────────────
+async function savePublication() {
+  var title = document.getElementById('pub-title').value.trim();
+  var type  = document.getElementById('pub-type').value;
+  var desc  = document.getElementById('pub-desc').value.trim();
+  var url   = document.getElementById('pub-url').value.trim();
+  var date  = document.getElementById('pub-date').value;
+  var file  = document.getElementById('pub-file').files[0];
+  if (!title) { showToast('Title required.', 'error'); return; }
+  var fd = new FormData();
+  fd.append('title', title); fd.append('pub_type', type); fd.append('description', desc);
+  fd.append('external_url', url); fd.append('published_date', date);
+  if (file) fd.append('file', file);
+  try { await apiFetch('/api/publications', { method:'POST', body:fd }); showToast('Publication saved!', 'success'); loadPublicationsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function loadPublicationsList() {
+  try {
+    var pubs = await apiFetch('/api/publications');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+    pubs.forEach(function(p) {
+      html += '<tr><td>' + escHtml(p.title) + '</td><td>' + escHtml(p.pub_type) + '</td><td>' + (p.published_date ? formatDate(p.published_date) : '—') + '</td>' +
+        '<td><button class="btn btn-danger btn-sm" onclick="deletePublication(\'' + escHtml(p.id) + '\')">Delete</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('publications-list').innerHTML = html;
+  } catch {}
+}
+
+async function deletePublication(id) {
+  if (!confirm('Delete?')) return;
+  try { await apiFetch('/api/publications/' + id, { method:'DELETE' }); showToast('Deleted.', 'success'); loadPublicationsList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+// ── BRANDING ─────────────────────────────────────
+async function loadBrandingPreview() {
+  try {
+    var settings = await apiFetch('/api/admin/settings');
+    var preview = document.getElementById('current-logo-preview');
+    if (settings.site_logo) {
+      preview.innerHTML = '<p style="font-size:0.75rem;color:var(--grey-light);margin-bottom:8px">Current logo:</p>' +
+        '<img src="' + escHtml(settings.site_logo) + '" style="max-height:60px;border:1px solid rgba(79,195,247,0.2);border-radius:var(--radius);padding:8px">';
+    }
+  } catch {}
+}
+
+async function uploadLogo() {
+  var file = document.getElementById('logo-file').files[0];
+  if (!file) { showToast('Select a file first.', 'error'); return; }
+  var fd = new FormData(); fd.append('logo', file);
+  try {
+    await apiFetch('/api/admin/settings/logo', { method:'POST', body:fd });
+    showToast('Logo updated! Refresh to see changes.', 'success');
+    loadBrandingPreview(); loadSiteLogo();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function resetLogo() {
+  if (!confirm('Reset to default M@SA logo?')) return;
+  try {
+    await apiFetch('/api/admin/settings/site_logo', { method:'PUT', body:{ value:'/assets/logo.svg' } });
+    showToast('Logo reset.', 'success'); loadSiteLogo();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// ── USERS ─────────────────────────────────────────
+async function createUser() {
+  var body = {
+    full_name: document.getElementById('usr-name').value.trim(),
+    email:     document.getElementById('usr-email').value.trim(),
+    password:  document.getElementById('usr-pass').value,
+    role:      document.getElementById('usr-role').value,
+  };
+  if (!body.full_name || !body.email || !body.password) { showToast('All fields required.', 'error'); return; }
+  if (body.password.length < 8) { showToast('Password must be at least 8 characters.', 'error'); return; }
+  try { await apiFetch('/api/admin/users', { method:'POST', body }); showToast('User created!', 'success'); loadUsersList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+
+async function loadUsersList() {
+  try {
+    var users = await apiFetch('/api/admin/users');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead><tbody>';
+    users.forEach(function(u) {
+      html += '<tr>' +
+        '<td>' + escHtml(u.full_name) + '</td>' +
+        '<td style="font-size:0.78rem">' + escHtml(u.email) + '</td>' +
+        '<td><span class="badge badge-' + (u.role==='super_admin'?'gold':'blue') + '">' + escHtml(u.role) + '</span></td>' +
+        '<td><span class="badge badge-' + (u.is_active?'green':'grey') + '">' + (u.is_active?'Active':'Inactive') + '</span></td>' +
+        '<td style="font-size:0.75rem">' + (u.last_login ? formatDate(u.last_login) : 'Never') + '</td>' +
+        '<td><button class="btn btn-ghost btn-sm" onclick="toggleUser(\'' + escHtml(u.id) + '\')">' + (u.is_active?'Deactivate':'Activate') + '</button></td>' +
+        '</tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('users-list').innerHTML = html;
+  } catch (err) { document.getElementById('users-list').innerHTML = '<p style="color:var(--grey-light)">Super admin access required to view users.</p>'; }
+}
+
+
+// ── SESSIONS ─────────────────────────────────────
+function togglePaidFields() {
+  var access = document.getElementById('sess-access').value;
+  document.getElementById('sess-price-wrap').style.display    = access === 'paid' ? 'block' : 'none';
+  document.getElementById('sess-bank-rows').style.display     = access === 'paid' ? 'block' : 'none';
+  document.getElementById('sess-password-row').style.display  = access === 'free_locked' ? 'block' : 'none';
+}
+
+async function createSession() {
+  var title  = document.getElementById('sess-title').value.trim();
+  var start  = document.getElementById('sess-start').value;
+  var access = document.getElementById('sess-access').value;
+  if (!title || !start) { showToast('Title and start time required.', 'error'); return; }
+  var body = {
+    title:             title,
+    description:       document.getElementById('sess-desc').value.trim(),
+    session_type:      document.getElementById('sess-type').value,
+    access_type:       access,
+    is_locked:         access !== 'free_open',
+    password:          document.getElementById('sess-password') ? document.getElementById('sess-password').value : '',
+    scheduled_start:   start,
+    scheduled_end:     document.getElementById('sess-end').value || null,
+    max_participants:  parseInt(document.getElementById('sess-max').value) || 100,
+    price_rands:       parseFloat(document.getElementById('sess-price') ? document.getElementById('sess-price').value : 0) || 0,
+    bank_name:         document.getElementById('sess-bank-name') ? document.getElementById('sess-bank-name').value : '',
+    bank_account_name: document.getElementById('sess-bank-acc-name') ? document.getElementById('sess-bank-acc-name').value : '',
+    bank_account_no:   document.getElementById('sess-bank-acc-no') ? document.getElementById('sess-bank-acc-no').value : '',
+    bank_branch_code:  document.getElementById('sess-bank-branch') ? document.getElementById('sess-bank-branch').value : '',
+    subject_id:        document.getElementById('sess-subject').value || null,
+  };
+  try {
+    await apiFetch('/api/sessions', { method: 'POST', body: body });
+    showToast('Session created!', 'success');
+    document.getElementById('sess-title').value = '';
+    document.getElementById('sess-desc').value  = '';
+    loadSessionsList();
+  } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+}
+
+async function loadSessionsList() {
+  try {
+    var sessions = await apiFetch('/api/sessions/admin/all');
+    var html = '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Title</th><th>Type</th><th>Access</th><th>Start</th><th>Status</th><th>Reg</th><th>Pending</th><th>Actions</th>' +
+      '</tr></thead><tbody>';
+    if (!sessions.length) {
+      html += '<tr><td colspan="8" style="text-align:center;color:var(--grey-light)">No sessions yet.</td></tr>';
+    } else {
+      sessions.forEach(function(s) {
+        var statusColor = {scheduled:'badge-blue', live:'badge-green', ended:'badge-grey', cancelled:'badge-grey'}[s.status] || 'badge-grey';
+        html += '<tr>' +
+          '<td style="max-width:200px">' + escHtml(s.title) + '</td>' +
+          '<td>' + escHtml(s.session_type) + '</td>' +
+          '<td>' + escHtml(s.access_type) + '</td>' +
+          '<td style="font-size:0.75rem">' + formatDate(s.scheduled_start) + '</td>' +
+          '<td><span class="badge ' + statusColor + '">' + escHtml(s.status.toUpperCase()) + '</span></td>' +
+          '<td>' + (s.total_registrations || 0) + '</td>' +
+          '<td>' + (s.pending_payments || 0) + '</td>' +
+          '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
+            (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','live')">▶ Start</button>' : '') +
+            (s.status === 'live'      ? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','ended')">■ End</button>' : '') +
+            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants('' + escHtml(s.id) + '','' + escHtml(s.title).replace(/'/g,"'") + '')">👥</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteSession('' + escHtml(s.id) + '')">✕</button>' +
+          '</td></tr>';
+      });
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('sessions-admin-list').innerHTML = html;
+  } catch (err) {
+    document.getElementById('sessions-admin-list').innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>';
+  }
+}
+
+async function setSessionStatus(id, status) {
+  var labels = { live: 'start this session', ended: 'end this session' };
+  if (!confirm('Are you sure you want to ' + (labels[status] || status) + '?')) return;
+  try {
+    await apiFetch('/api/sessions/' + id + '/status', { method: 'PUT', body: { status: status } });
+    showToast('Session ' + status + '!', 'success');
+    loadSessionsList();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function deleteSession(id) {
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+  try {
+    await apiFetch('/api/sessions/' + id, { method: 'DELETE' });
+    showToast('Session deleted.', 'success');
+    loadSessionsList();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function viewParticipants(sessionId, title) {
+  document.getElementById('participants-modal-title').textContent = 'Participants — ' + title;
+  document.getElementById('participants-modal-body').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  openModal('participants-modal');
+  try {
+    var participants = await apiFetch('/api/sessions/' + sessionId + '/participants');
+    if (!participants.length) {
+      document.getElementById('participants-modal-body').innerHTML = '<p style="padding:20px;color:var(--grey-light)">No registrations yet.</p>';
+      return;
+    }
+    var html = '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Name</th><th>ID Number</th><th>Class ID</th><th>Payment</th><th>Registered</th><th>Admitted</th><th>Actions</th>' +
+      '</tr></thead><tbody>';
+    participants.forEach(function(p) {
+      var payColor = {verified:'badge-green', pending:'badge-gold', rejected:'badge-grey', free:'badge-blue'}[p.payment_status] || 'badge-grey';
+      html += '<tr>' +
+        '<td>' + escHtml(p.info_cleared ? '[cleared]' : p.full_name) + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:0.75rem">' + escHtml(p.info_cleared ? '[cleared]' : p.id_number) + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gold)">' + escHtml(p.class_id) + '</td>' +
+        '<td><span class="badge ' + payColor + '">' + escHtml(p.payment_status.toUpperCase()) + '</span></td>' +
+        '<td style="font-size:0.72rem">' + formatDate(p.registered_at) + '</td>' +
+        '<td style="font-size:0.72rem">' + (p.admitted_at ? formatDate(p.admitted_at) : '—') + '</td>' +
+        '<td style="display:flex;gap:4px">' +
+          (p.payment_status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','verified',this)">✓ Verify</button><button class="btn btn-danger btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','rejected',this)">✕</button>' : '') +
+        '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('participants-modal-body').innerHTML = html;
+  } catch (err) {
+    document.getElementById('participants-modal-body').innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>';
+  }
+}
+
+async function verifyPayment(participantId, status, btn) {
+  btn.disabled = true;
+  try {
+    await apiFetch('/api/sessions/participants/' + participantId + '/payment', { method: 'PUT', body: { status: status } });
+    showToast('Payment ' + status + '!', 'success');
+    btn.closest('tr').querySelector('.badge').textContent = status.toUpperCase();
+    btn.closest('td').innerHTML = '';
+  } catch (err) { showToast(err.message, 'error'); btn.disabled = false; }
+}
+
+async function toggleUser(id) {
+  try { await apiFetch('/api/admin/users/' + id + '/toggle', { method:'PUT' }); showToast('User updated.', 'success'); loadUsersList(); }
+  catch (err) { showToast(err.message, 'error'); }
+}
+</script>
+</body>
+</html>
+<script>
+// ── SESSIONS ADMIN JS ──────────────────────────────
+var currentSessionId = null;
+
+function toggleSessionOptions() {
+  var access = document.getElementById('ses-access').value;
+  document.getElementById('ses-password-section').style.display = (access === 'free_locked') ? 'block' : 'none';
+  document.getElementById('ses-payment-section').style.display  = (access === 'paid') ? 'block' : 'none';
+}
+
+async function saveSession() {
+  var body = {
+    title:            document.getElementById('ses-title').value.trim(),
+    description:      document.getElementById('ses-desc').value.trim(),
+    session_type:     document.getElementById('ses-type').value,
+    access_type:      document.getElementById('ses-access').value,
+    is_locked:        document.getElementById('ses-access').value !== 'free_open',
+    password:         document.getElementById('ses-password') ? document.getElementById('ses-password').value : '',
+    scheduled_start:  document.getElementById('ses-start').value,
+    scheduled_end:    document.getElementById('ses-end').value || undefined,
+    max_participants: parseInt(document.getElementById('ses-max').value) || 100,
+    price_rands:      document.getElementById('ses-price') ? parseFloat(document.getElementById('ses-price').value) || 0 : 0,
+    bank_name:        document.getElementById('ses-bank-name') ? document.getElementById('ses-bank-name').value : '',
+    bank_account_name:document.getElementById('ses-bank-acc-name') ? document.getElementById('ses-bank-acc-name').value : '',
+    bank_account_no:  document.getElementById('ses-bank-acc-no') ? document.getElementById('ses-bank-acc-no').value : '',
+    bank_branch_code: document.getElementById('ses-branch-code') ? document.getElementById('ses-branch-code').value : '',
+    subject_id:       document.getElementById('ses-subject') ? document.getElementById('ses-subject').value || undefined : undefined,
+  };
+  if (!body.title || !body.scheduled_start) { showToast('Title and start time required.', 'error'); return; }
+  try {
+    await apiFetch('/api/sessions', { method: 'POST', body: body });
+    showToast('Session created!', 'success');
+    document.getElementById('ses-title').value = '';
+    document.getElementById('ses-desc').value  = '';
+    loadSessionsList();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function loadSessionsList() {
+  try {
+    var sessions = await apiFetch('/api/sessions');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Start</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    if (!sessions.length) {
+      html += '<tr><td colspan="6" style="text-align:center;color:var(--grey-light)">No sessions yet.</td></tr>';
+    } else {
+      sessions.forEach(function(s) {
+        var start = new Date(s.scheduled_start);
+        var statusColors = { scheduled:'blue', live:'green', ended:'grey', cancelled:'grey' };
+        html += '<tr>'
+          +'<td>'+escHtml(s.title)+'</td>'
+          +'<td>'+escHtml(s.session_type)+'</td>'
+          +'<td><span class="badge badge-'+(s.access_type==='paid'?'gold':s.access_type==='free_locked'?'blue':'green')+'">'+escHtml(s.access_type.replace('_',' '))+'</span></td>'
+          +'<td style="font-size:0.75rem">'+start.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})+'<br>'+start.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</td>'
+          +'<td><span class="badge badge-'+(statusColors[s.status]||'grey')+'">'+escHtml(s.status)+'</span></td>'
+          +'<td style="display:flex;gap:4px;flex-wrap:wrap">'
+          +(s.status==='scheduled'?'<button class="btn btn-primary btn-sm" onclick="startSession(\''+s.id+'\')">▶ Start</button>':'')
+          +(s.status==='live'?'<button class="btn btn-danger btn-sm" onclick="endSession(\''+s.id+'\')">■ End</button>':'')
+          +'<button class="btn btn-ghost btn-sm" onclick="viewParticipants(\''+s.id+'\',\''+escHtml(s.title)+'\')">👥 '+(s.confirmed_count||0)+'</button>'
+          +'<button class="btn btn-ghost btn-sm" onclick="window.open(\'/session.html?id='+s.id+'\',\'_blank\')">View</button>'
+          +'<button class="btn btn-danger btn-sm" onclick="deleteSession(\''+s.id+'\')">Cancel</button>'
+          +'</td></tr>';
+      });
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('sessions-list').innerHTML = html;
+  } catch(e) { document.getElementById('sessions-list').innerHTML = '<p style="color:var(--error)">'+escHtml(e.message)+'</p>'; }
+}
+
+async function startSession(id) {
+  if (!confirm('Start this session? It will go live immediately.')) return;
+  try { await apiFetch('/api/sessions/'+id+'/start', { method:'PUT' }); showToast('Session is now live!', 'success'); loadSessionsList(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+
+async function endSession(id) {
+  if (!confirm('End this session? Participant personal information will be deleted immediately.')) return;
+  try { await apiFetch('/api/sessions/'+id+'/end', { method:'PUT' }); showToast('Session ended. Personal info deleted.', 'success'); loadSessionsList(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteSession(id) {
+  if (!confirm('Cancel this session?')) return;
+  try { await apiFetch('/api/sessions/'+id, { method:'DELETE' }); showToast('Session cancelled.', 'success'); loadSessionsList(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+
+async function viewParticipants(sessionId, sessionTitle) {
+  currentSessionId = sessionId;
+  document.getElementById('participants-panel').style.display = 'block';
+  document.getElementById('participants-panel').scrollIntoView({ behavior:'smooth' });
+  await loadParticipants(sessionId);
+}
+
+async function loadParticipants(sessionId) {
+  try {
+    var participants = await apiFetch('/api/sessions/'+sessionId+'/participants');
+    var html = '<div class="table-wrap"><table><thead><tr><th>Name</th><th>ID Number</th><th>Class ID</th><th>Email</th><th>Payment</th><th>Actions</th></tr></thead><tbody>';
+    if (!participants.length) {
+      html += '<tr><td colspan="6" style="text-align:center;color:var(--grey-light)">No registrations yet.</td></tr>';
+    } else {
+      participants.forEach(function(p) {
+        var statusColors = { pending:'blue', verified:'green', rejected:'grey', free:'green' };
+        html += '<tr>'
+          +'<td>'+escHtml(p.info_cleared?'[removed]':p.full_name)+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:0.75rem">'+escHtml(p.info_cleared?'[removed]':p.id_number)+'</td>'
+          +'<td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gold)">'+escHtml(p.class_id)+'</td>'
+          +'<td style="font-size:0.75rem">'+escHtml(p.email||'—')+'</td>'
+          +'<td><span class="badge badge-'+(statusColors[p.payment_status]||'grey')+'">'+escHtml(p.payment_status)+'</span></td>'
+          +'<td style="display:flex;gap:4px">'
+          +(p.payment_status==='pending'
+            ?'<button class="btn btn-primary btn-sm" onclick="verifyPayment(\''+p.id+'\')">✓ Verify</button>'
+            +'<button class="btn btn-danger btn-sm" onclick="rejectPayment(\''+p.id+'\')">✗ Reject</button>'
+            :'')
+          +'</td></tr>';
+      });
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('participants-table').innerHTML = html;
+  } catch(e) { document.getElementById('participants-table').innerHTML = '<p style="color:var(--error)">'+escHtml(e.message)+'</p>'; }
+}
+
+async function verifyPayment(participantId) {
+  var ref = prompt('Enter payment reference (optional):');
+  try {
+    await apiFetch('/api/sessions/'+currentSessionId+'/participants/'+participantId+'/verify', {
+      method:'PUT', body:{ payment_reference: ref||'' }
+    });
+    showToast('Payment verified!', 'success');
+    loadParticipants(currentSessionId);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function rejectPayment(participantId) {
+  if (!confirm('Reject this payment?')) return;
+  try {
+    await apiFetch('/api/sessions/'+currentSessionId+'/participants/'+participantId+'/reject', { method:'PUT' });
+    showToast('Payment rejected.', 'success');
+    loadParticipants(currentSessionId);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function admitParticipant() {
+  var classId = document.getElementById('admit-classid').value.trim();
+  if (!classId) { showToast('Enter a Class ID.', 'error'); return; }
+  try {
+    var result = await apiFetch('/api/sessions/'+currentSessionId+'/admit', {
+      method:'POST', body:{ class_id: classId }
+    });
+    if (result.admitted) {
+      showToast('✓ Admitted: ' + result.participant.full_name, 'success');
+      document.getElementById('admit-classid').value = '';
+      loadParticipants(currentSessionId);
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// Override showPanel to load sessions
+var _origShowPanel = showPanel;
+showPanel = function(name, btn) {
+  _origShowPanel(name, btn);
+  if (name === 'sessions') {
+    loadSessionsList();
+    loadSubjectsForSelects(['ses-subject']);
+  }
+};
+</script>

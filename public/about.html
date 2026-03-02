@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — M@SA</title>
+  <link rel="manifest" href="/assets/manifest.json">
+  <link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<header id="site-header">
+  <a class="logo-link" href="/"><div class="logo-mark" id="site-logo-mark">M@SA</div>
+    <div class="logo-text"><span class="logo-main">M@SA</span><span class="logo-sub">Messelaar @ STEM Academy NPC</span></div>
+  </a>
+  <div class="header-spacer"></div>
+  <button class="admin-login-btn" onclick="window.location.href='/admin.html'">Admin</button>
+  <div style="position:relative">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <nav class="nav-dropdown" id="navMenu">
+      <a href="/">🏠 Home</a><a href="/learner.html">🎓 School Learner</a>
+      <a href="/tertiary.html">🏛️ Tertiary</a><a href="/programs.html">🚀 Programs</a>
+      <a href="/events.html">📅 Events</a><a href="/sessions.html">📡 Sessions</a><a href="/publications.html">📄 Publications</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <div class="about-hero">
+    <h1>About M@SA</h1>
+    <p>Messelaar @ STEM Academy NPC is a community-driven non-profit organisation dedicated to dismantling educational barriers in South Africa. We believe every learner deserves free, world-class STEM education — no registration, no fees, no gatekeeping.</p>
+  </div>
+
+  <div class="section-label" style="margin-bottom:8px">Our Pillars</div>
+  <div class="grid-3" style="margin-bottom:48px">
+    <div class="pillar-card"><div class="pillar-icon">🎯</div><h4>Our Mission</h4><p>To provide free, high-quality, curriculum-aligned STEM education to all South African learners from Grade 10 through to tertiary level.</p></div>
+    <div class="pillar-card"><div class="pillar-icon">🌍</div><h4>Community First</h4><p>Born from the Messelaar community, our programmes are designed with local context and challenges in mind, building education from the ground up.</p></div>
+    <div class="pillar-card"><div class="pillar-icon">🔓</div><h4>Open Access</h4><p>No accounts. No fees. No gatekeeping. Every resource is immediately accessible to any learner, anywhere in South Africa and beyond.</p></div>
+    <div class="pillar-card"><div class="pillar-icon">🤖</div><h4>AI-Assisted Learning</h4><p>Our integrated AI tutor adapts its responses to each student's exact level — Grade 10 learners and university students get appropriately calibrated help.</p></div>
+    <div class="pillar-card"><div class="pillar-icon">📶</div><h4>Offline Ready</h4><p>Subject content can be downloaded to any device for offline study — critical for learners with limited or unreliable internet access.</p></div>
+    <div class="pillar-card"><div class="pillar-icon">🇿🇦</div><h4>South African Context</h4><p>Everything is aligned to the South African CAPS curriculum and framed within local examples, industries, and opportunities.</p></div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:8px">The Platform</div>
+  <div class="card" style="padding:28px;margin-bottom:16px">
+    <p style="color:var(--white-dim);line-height:1.8;font-size:0.92rem">M@SA serves two student paths: <strong style="color:var(--light-blue)">School Learners</strong> in Grades 10–12 following the CAPS curriculum, and <strong style="color:var(--gold)">Tertiary Students</strong> across faculties including Engineering, Natural Sciences, Health Sciences, Information Technology, Built Environment, and Agricultural Sciences. Both paths lead to dedicated subject pages packed with videos, study notes, PDFs, practice questions, quizzes, and AI-assisted tutoring.</p>
+  </div>
+
+  <div class="section-label" style="margin-bottom:8px;margin-top:40px">Contact</div>
+  <div class="card" style="padding:24px;max-width:480px">
+    <p style="color:var(--grey-light);font-size:0.85rem;margin-bottom:8px">📧 info@masa.org.za</p>
+    <p style="color:var(--grey-light);font-size:0.85rem;margin-bottom:8px">🌐 masa.org.za</p>
+    <p style="color:var(--grey-light);font-size:0.85rem">📍 Messelaar, Northern Cape, South Africa</p>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => loadSiteLogo());</script>
+</body>
+</html>

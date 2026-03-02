@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Learner — M@SA</title>
+  <link rel="manifest" href="/assets/manifest.json">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<header id="site-header">
+  <a class="logo-link" href="/"><div class="logo-mark" id="site-logo-mark">M@SA</div>
+    <div class="logo-text"><span class="logo-main">M@SA</span><span class="logo-sub">Messelaar @ STEM Academy NPC</span></div>
+  </a>
+  <div class="header-spacer"></div>
+  <button class="admin-login-btn" onclick="window.location.href='/admin.html'">Admin</button>
+  <div style="position:relative">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <nav class="nav-dropdown" id="navMenu">
+      <a href="/">🏠 Home</a><a href="/about.html">ℹ️ About</a>
+      <a href="/programs.html">🚀 Programs</a><a href="/events.html">📅 Events</a><a href="/sessions.html">📡 Sessions</a>
+      <a href="/publications.html">📄 Publications</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="section-label">Education Path</div>
+  <h1 style="font-size:1.8rem;margin-bottom:8px">School Learner</h1>
+  <p style="color:var(--grey-light);margin-bottom:32px">Select your grade to see CAPS-aligned subjects. Click any subject to start learning.</p>
+
+  <div id="grades-container">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadSiteLogo();
+  await loadGrades();
+});
+
+async function loadGrades() {
+  try {
+    const [grades, subjects] = await Promise.all([
+      apiFetch('/api/grades'),
+      apiFetch('/api/subjects?path_type=school')
+    ]);
+
+    const container = document.getElementById('grades-container');
+    container.innerHTML = grades.map((g, i) => {
+      const gradeSubjects = subjects.filter(s => s.grade_id === g.id);
+      return `
+        <div class="accordion-item" id="grade-${g.id}">
+          <div class="accordion-header">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="grade-badge">GR ${escHtml(g.name)}</div>
+              <div>
+                <h3 style="font-size:1rem;font-weight:600">${escHtml(g.display_name)}</h3>
+                <p style="font-size:0.75rem;color:var(--grey-light)">${escHtml(g.description || '')} · ${gradeSubjects.length} subjects</p>
+              </div>
+            </div>
+            <div class="accordion-arrow">⌄</div>
+          </div>
+          <div class="accordion-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px">
+              ${gradeSubjects.map(s => `
+                <a class="subject-chip" href="/subject.html?id=${encodeURIComponent(s.id)}">
+                  <span class="chip-icon">${escHtml(s.icon || '📚')}</span>
+                  ${escHtml(s.name)}
+                </a>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    initAccordions('.accordion-item');
+  } catch (err) {
+    document.getElementById('grades-container').innerHTML =
+      `<p style="color:var(--error)">Failed to load grades: ${escHtml(err.message)}</p>`;
+  }
+}
+</script>
+</body>
+</html>

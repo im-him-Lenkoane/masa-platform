@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events — M@SA</title>
+  <link rel="manifest" href="/assets/manifest.json">
+  <link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<header id="site-header">
+  <a class="logo-link" href="/"><div class="logo-mark" id="site-logo-mark">M@SA</div>
+    <div class="logo-text"><span class="logo-main">M@SA</span><span class="logo-sub">Messelaar @ STEM Academy NPC</span></div>
+  </a>
+  <div class="header-spacer"></div>
+  <button class="admin-login-btn" onclick="window.location.href='/admin.html'">Admin</button>
+  <div style="position:relative">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <nav class="nav-dropdown" id="navMenu">
+      <a href="/">🏠 Home</a><a href="/about.html">ℹ️ About</a>
+      <a href="/programs.html">🚀 Programs</a><a href="/publications.html">📄 Publications</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <div class="section-label">Calendar</div>
+  <h1 style="font-size:1.8rem;margin-bottom:8px">Events</h1>
+  <p style="color:var(--grey-light);margin-bottom:32px">Upcoming workshops, boot camps, webinars and community events hosted by M@SA.</p>
+
+  <h3 style="font-size:0.82rem;color:var(--gold);font-family:var(--font-mono);margin-bottom:16px;letter-spacing:0.1em">UPCOMING</h3>
+  <div class="grid-2" id="upcoming-events">
+    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </div>
+
+  <h3 style="font-size:0.82rem;color:var(--grey-mid);font-family:var(--font-mono);margin:36px 0 16px;letter-spacing:0.1em">PAST EVENTS</h3>
+  <div class="grid-2" id="past-events"></div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadSiteLogo();
+  try {
+    const events = await apiFetch('/api/events');
+    const now = new Date();
+    const upcoming = events.filter(e => new Date(e.event_date) >= now);
+    const past     = events.filter(e => new Date(e.event_date) <  now).reverse();
+    renderEvents('upcoming-events', upcoming, 'No upcoming events right now. Check back soon!');
+    renderEvents('past-events',     past,     'No past events recorded yet.');
+  } catch (err) {
+    document.getElementById('upcoming-events').innerHTML = '<p style="color:var(--error);grid-column:1/-1">' + escHtml(err.message) + '</p>';
+  }
+});
+
+function renderEvents(containerId, events, emptyMsg) {
+  const c = document.getElementById(containerId);
+  if (!events.length) { c.innerHTML = '<p style="color:var(--grey-light);grid-column:1/-1;padding:20px 0">' + emptyMsg + '</p>'; return; }
+  c.innerHTML = events.map(e => {
+    const d = new Date(e.event_date);
+    return '<div class="event-card">' +
+      '<div class="event-date-bar">' +
+        '<div class="event-date-num">' + d.getDate() + '</div>' +
+        '<div class="event-date-info">' + d.toLocaleString('en-ZA',{month:'long',year:'numeric'}).toUpperCase() + '<br>' + d.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}) + '</div>' +
+      '</div>' +
+      '<div class="event-body">' +
+        '<h4>' + escHtml(e.title) + '</h4>' +
+        '<p>' + escHtml(e.description || '') + '</p>' +
+        '<span class="badge badge-blue" style="margin-top:10px">' + escHtml((e.event_type||'event').toUpperCase()) + (e.location ? ' · ' + escHtml(e.location) : '') + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
