@@ -87,12 +87,17 @@
       <button class="sidebar-btn" onclick="showPanel('quizzes', this)">🎯 Quizzes</button>
       <button class="sidebar-btn" onclick="showPanel('comments', this)">💬 Comments</button>
 
+      <div class="sidebar-label">Curriculum</div>
+      <button class="sidebar-btn" onclick="showPanel('grades', this)">▶️ grades</button>
+      <button class="sidebar-btn" onclick="showPanel('faculties', this)">📄 Faculties</button>
+      <button class="sidebar-btn" onclick="showPanel('subjects', this)">📝 subjects</button>
+      <button class="sidebar-btn" onclick="showPanel('topics', this)">🎯 topics</button>
+
       <div class="sidebar-label">Site</div>
       <button class="sidebar-btn" onclick="showPanel('events', this)">📅 Events</button>
       <button class="sidebar-btn" onclick="showPanel('sponsors', this)">🤝 Sponsors</button>
       <button class="sidebar-btn" onclick="showPanel('programs', this)">🚀 Programs</button>
       <button class="sidebar-btn" onclick="showPanel('publications', this)">📖 Publications</button>
-      <button class="sidebar-btn" onclick="showPanel('sessions', this)">📡 Sessions</button>
       <button class="sidebar-btn" onclick="showPanel('sessions', this)">📡 Sessions</button>
       <button class="sidebar-btn" onclick="showPanel('branding', this)">🎨 Branding & Logo</button>
 
@@ -293,7 +298,102 @@
           </div>
         </div>
       </div>
+      <!-- GRADES -->
+<div class="section-panel" id="panel-grades">
+  <h2 style="margin-bottom:24px">🎓 Manage Grades</h2>
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Add Grade</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grade Name</label>
+        <input type="text" id="grade-name" placeholder="e.g. Grade 10" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Level (number)</label>
+        <input type="number" id="grade-level" placeholder="e.g. 10" class="form-control">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addGrade()">Add Grade</button>
+  </div>
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Existing Grades</h3>
+    <div id="grades-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
 
+<!-- FACULTIES -->
+<div class="section-panel" id="panel-faculties">
+  <h2 style="margin-bottom:24px">🏛️ Manage Faculties</h2>
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Add Faculty</h3>
+    <div class="form-group">
+      <label>Faculty Name</label>
+      <input type="text" id="faculty-name" placeholder="e.g. Mathematics" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="faculty-desc" placeholder="Description" class="form-control">
+    </div>
+    <button class="btn btn-primary" onclick="addFaculty()">Add Faculty</button>
+  </div>
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Existing Faculties</h3>
+    <div id="faculties-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- SUBJECTS -->
+<div class="section-panel" id="panel-subjects">
+  <h2 style="margin-bottom:24px">📚 Manage Subjects</h2>
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Add Subject</h3>
+    <div class="form-group">
+      <label>Subject Name</label>
+      <input type="text" id="subject-name" placeholder="e.g. Mathematics" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Faculty</label>
+      <select id="subject-faculty" class="form-control">
+        <option value="">Select faculty...</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Grade</label>
+      <select id="subject-grade" class="form-control">
+        <option value="">Select grade...</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+  </div>
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Existing Subjects</h3>
+    <div id="subjects-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- TOPICS -->
+<div class="section-panel" id="panel-topics">
+  <h2 style="margin-bottom:24px">📖 Manage Topics/Modules</h2>
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Add Topic</h3>
+    <div class="form-group">
+      <label>Topic Name</label>
+      <input type="text" id="topic-name" placeholder="e.g. Algebra" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <select id="topic-subject" class="form-control">
+        <option value="">Select subject...</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="addTopic()">Add Topic</button>
+  </div>
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Existing Topics</h3>
+    <div id="topics-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+      
       <!-- EVENTS -->
       <div class="section-panel" id="panel-events">
         <h2 style="margin-bottom:24px">Events</h2>
@@ -590,6 +690,10 @@ function showPanel(name, btn) {
     'programs':       loadProgramsList,
     'publications':   loadPublicationsList,
     'users':          loadUsersList,
+    'grades': loadGrades,
+    'faculties': loadFaculties,
+    'subjects': function() { loadSubjects(); loadSubjectSelects(); },
+    'topics': function() { loadTopics(); loadTopicSelects(); },
     'content-video':  function() { loadSubjectsForSelects(['vid-subject']); },
     'content-files':  function() { loadSubjectsForSelects(['file-subject']); },
     'content-notes':  function() { loadSubjectsForSelects(['notes-subject']); },
@@ -1362,4 +1466,164 @@ showPanel = function(name, btn) {
     loadSubjectsForSelects(['ses-subject']);
   }
 };
+// ===== GRADES =====
+async function loadGrades() {
+  try {
+    const res = await apiFetch('/api/grades');
+    const grades = await res.json();
+    let html = '<table class="table"><thead><tr><th>Name</th><th>Level</th><th>Action</th></tr></thead><tbody>';
+    grades.forEach(g => {
+      html += `<tr><td>${escHtml(g.name)}</td><td>${g.level}</td><td><button class="btn btn-danger btn-sm" onclick="deleteGrade('${g.id}')">Delete</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('grades-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('grades-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function addGrade() {
+  const name = document.getElementById('grade-name').value.trim();
+  const level = document.getElementById('grade-level').value;
+  if (!name || !level) return alert('Fill in all fields');
+  try {
+    await apiFetch('/api/grades', { method: 'POST', body: { name, level: parseInt(level) } });
+    document.getElementById('grade-name').value = '';
+    document.getElementById('grade-level').value = '';
+    loadGrades();
+  } catch(err) { alert(err.message); }
+}
+
+async function deleteGrade(id) {
+  if (!confirm('Delete this grade?')) return;
+  try {
+    await apiFetch('/api/grades/' + id, { method: 'DELETE' });
+    loadGrades();
+  } catch(err) { alert(err.message); }
+}
+
+// ===== FACULTIES =====
+async function loadFaculties() {
+  try {
+    const res = await apiFetch('/api/faculties');
+    const faculties = await res.json();
+    let html = '<table class="table"><thead><tr><th>Name</th><th>Description</th><th>Action</th></tr></thead><tbody>';
+    faculties.forEach(f => {
+      html += `<tr><td>${escHtml(f.name)}</td><td>${escHtml(f.description||'')}</td><td><button class="btn btn-danger btn-sm" onclick="deleteFaculty('${f.id}')">Delete</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('faculties-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('faculties-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function addFaculty() {
+  const name = document.getElementById('faculty-name').value.trim();
+  const description = document.getElementById('faculty-desc').value.trim();
+  if (!name) return alert('Enter faculty name');
+  try {
+    await apiFetch('/api/faculties', { method: 'POST', body: { name, description } });
+    document.getElementById('faculty-name').value = '';
+    document.getElementById('faculty-desc').value = '';
+    loadFaculties();
+  } catch(err) { alert(err.message); }
+}
+
+async function deleteFaculty(id) {
+  if (!confirm('Delete this faculty?')) return;
+  try {
+    await apiFetch('/api/faculties/' + id, { method: 'DELETE' });
+    loadFaculties();
+  } catch(err) { alert(err.message); }
+}
+
+// ===== SUBJECTS =====
+async function loadSubjects() {
+  try {
+    const res = await apiFetch('/api/subjects');
+    const subjects = await res.json();
+    let html = '<table class="table"><thead><tr><th>Name</th><th>Faculty</th><th>Grade</th><th>Action</th></tr></thead><tbody>';
+    subjects.forEach(s => {
+      html += `<tr><td>${escHtml(s.name)}</td><td>${escHtml(s.faculty_name||'')}</td><td>${escHtml(s.grade_name||'')}</td><td><button class="btn btn-danger btn-sm" onclick="deleteSubject('${s.id}')">Delete</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('subjects-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('subjects-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function loadSubjectSelects() {
+  try {
+    const [fr, gr] = await Promise.all([apiFetch('/api/faculties'), apiFetch('/api/grades')]);
+    const faculties = await fr.json();
+    const grades = await gr.json();
+    document.getElementById('subject-faculty').innerHTML = '<option value="">Select faculty...</option>' + faculties.map(f => `<option value="${f.id}">${escHtml(f.name)}</option>`).join('');
+    document.getElementById('subject-grade').innerHTML = '<option value="">Select grade...</option>' + grades.map(g => `<option value="${g.id}">${escHtml(g.name)}</option>`).join('');
+  } catch(err) { console.error(err); }
+}
+
+async function addSubject() {
+  const name = document.getElementById('subject-name').value.trim();
+  const faculty_id = document.getElementById('subject-faculty').value;
+  const grade_id = document.getElementById('subject-grade').value;
+  if (!name || !faculty_id || !grade_id) return alert('Fill in all fields');
+  try {
+    await apiFetch('/api/subjects', { method: 'POST', body: { name, faculty_id, grade_id } });
+    document.getElementById('subject-name').value = '';
+    loadSubjects();
+  } catch(err) { alert(err.message); }
+}
+
+async function deleteSubject(id) {
+  if (!confirm('Delete this subject?')) return;
+  try {
+    await apiFetch('/api/subjects/' + id, { method: 'DELETE' });
+    loadSubjects();
+  } catch(err) { alert(err.message); }
+}
+
+// ===== TOPICS =====
+async function loadTopics() {
+  try {
+    const res = await apiFetch('/api/topics');
+    const topics = await res.json();
+    let html = '<table class="table"><thead><tr><th>Name</th><th>Subject</th><th>Action</th></tr></thead><tbody>';
+    topics.forEach(t => {
+      html += `<tr><td>${escHtml(t.name)}</td><td>${escHtml(t.subject_name||'')}</td><td><button class="btn btn-danger btn-sm" onclick="deleteTopic('${t.id}')">Delete</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('topics-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('topics-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function loadTopicSelects() {
+  try {
+    const res = await apiFetch('/api/subjects');
+    const subjects = await res.json();
+    document.getElementById('topic-subject').innerHTML = '<option value="">Select subject...</option>' + subjects.map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+  } catch(err) { console.error(err); }
+}
+
+async function addTopic() {
+  const name = document.getElementById('topic-name').value.trim();
+  const subject_id = document.getElementById('topic-subject').value;
+  if (!name || !subject_id) return alert('Fill in all fields');
+  try {
+    await apiFetch('/api/topics', { method: 'POST', body: { name, subject_id } });
+    document.getElementById('topic-name').value = '';
+    loadTopics();
+  } catch(err) { alert(err.message); }
+}
+
+async function deleteTopic(id) {
+  if (!confirm('Delete this topic?')) return;
+  try {
+    await apiFetch('/api/topics/' + id, { method: 'DELETE' });
+    loadTopics();
+  } catch(err) { alert(err.message); }
+}
 </script>
