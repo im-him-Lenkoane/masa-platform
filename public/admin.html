@@ -1114,10 +1114,10 @@ async function loadSessionsList() {
           '<td>' + (s.total_registrations || 0) + '</td>' +
           '<td>' + (s.pending_payments || 0) + '</td>' +
           '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-            (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','live')">▶ Start</button>' : '') +
-            (s.status === 'live'      ? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','ended')">■ End</button>' : '') +
-            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants('' + escHtml(s.id) + '','' + escHtml(s.title).replace(/'/g,"'") + '')">👥</button>' +
-            '<button class="btn btn-danger btn-sm" onclick="deleteSession('' + escHtml(s.id) + '')">✕</button>' +
+            (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\', \'live\')">Start</button>' : '') +
+            (s.status === 'live'? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\', \'ended\')"> End</button>' : '') +
+            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants(\'' + escHtml(s.id) + '\', \'' + escHtml(s.title).replace(/'/g,"'") + '\')">👥</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + escHtml(s.id) + '\')">✕</button>' +
           '</td></tr>';
       });
     }
@@ -1170,7 +1170,7 @@ async function viewParticipants(sessionId, title) {
         '<td style="font-size:0.72rem">' + formatDate(p.registered_at) + '</td>' +
         '<td style="font-size:0.72rem">' + (p.admitted_at ? formatDate(p.admitted_at) : '—') + '</td>' +
         '<td style="display:flex;gap:4px">' +
-          (p.payment_status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','verified',this)">✓ Verify</button><button class="btn btn-danger btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','rejected',this)">✕</button>' : '') +
+          (p.payment_status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="verifyPayment(\'' + escHtml(p.id) + '\', \'verified\', this)">✓ Verify</button><button class="btn btn-danger btn-sm" onclick="verifyPayment(\'' + escHtml(p.id) + '\', \'rejected\', this)">✕</button>' : '') +
         '</td></tr>';
     });
     html += '</tbody></table></div>';
