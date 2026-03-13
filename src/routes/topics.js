@@ -4,6 +4,27 @@ const router = express.Router();
 const { query } = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 
+// GET /api/topics/all (admin only - returns all topics with subject info)
+router.get('/all', requireAuth, async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT t.id, t.title, t.description, t.sort_order, t.subject_id,
+             s.name AS subject_name, s.path_type, g.display_name AS grade_name,
+             COUNT(r.id) AS resource_count
+      FROM topics t
+      JOIN subjects s ON s.id = t.subject_id
+      LEFT JOIN grades g ON g.id = s.grade_id
+      LEFT JOIN resources r ON r.topic_id = t.id AND r.is_active = true
+      WHERE t.is_active = true
+      GROUP BY t.id, s.name, s.path_type, g.display_name
+      ORDER BY s.name, t.sort_order
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/topics?subject_id=xxx
 router.get('/', async (req, res) => {
   try {

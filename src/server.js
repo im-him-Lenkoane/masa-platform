@@ -10,13 +10,25 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const pgSession = require('connect-pg-simple')(session);
+const { pool } = require('./db/pool');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Security middleware ──────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "fonts.gstatic.com"],
+      fontSrc: ["'self'", "fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      frameSrc: ["'self'", "https://www.youtube.com"],
+      connectSrc: ["'self'"]
+    }
+  }
 }));
 
 app.use(cors({
@@ -55,13 +67,18 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── Session ──────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'masaSTEMacademy2024secretKeyLenkoane',
+  store: new pgSession({
+    pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || 'dev-secret-change-this',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true if using HTTPS',
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 8 * 60 * 60 * 1000 // 8 hours
   }
 }));
 
@@ -85,7 +102,6 @@ app.use('/api/publications', require('./routes/publications'));
 app.use('/api/comments',     require('./routes/comments'));
 app.use('/api/admin',        require('./routes/admin'));
 app.use('/api/email',        require('./routes/email'));
-app.use('/api/sessions',     require('./routes/sessions'));
 app.use('/api/sessions',     require('./routes/sessions'));
 
 // ── Catch-all: serve index.html for SPA routing ──
