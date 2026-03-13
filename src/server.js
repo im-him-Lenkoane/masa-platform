@@ -55,13 +55,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── Session ──────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev-secret-change-this',
+  secret: process.env.SESSION_SECRET || 'masaSTEMacademy2024secreteKeyLenkoane',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to true if using HTTPS',
     httpOnly: true,
-    maxAge: 8 * 60 * 60 * 1000 // 8 hours
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
