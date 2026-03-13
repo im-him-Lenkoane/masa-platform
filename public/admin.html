@@ -1155,10 +1155,10 @@ async function loadSessionsList() {
           '<td>' + (s.total_registrations || 0) + '</td>' +
           '<td>' + (s.pending_payments || 0) + '</td>' +
           '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-            (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','live')">▶ Start</button>' : '') +
-            (s.status === 'live'      ? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus('' + escHtml(s.id) + '','ended')">■ End</button>' : '') +
-            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants('' + escHtml(s.id) + '','' + escHtml(s.title).replace(/'/g,"'") + '')">👥</button>' +
-            '<button class="btn btn-danger btn-sm" onclick="deleteSession('' + escHtml(s.id) + '')">✕</button>' +
+            (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\',\'live\')">▶ Start</button>' : '') +
+            (s.status === 'live'      ? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\',\'ended\')">■ End</button>' : '') +
+            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants(\'' + escHtml(s.id) + '\',\'' + escHtml(s.title).replace(/'/g,"\\'") + '\')">👥</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + escHtml(s.id) + '\')">✕</button>' +
           '</td></tr>';
       });
     }
@@ -1211,7 +1211,7 @@ async function viewParticipants(sessionId, title) {
         '<td style="font-size:0.72rem">' + formatDate(p.registered_at) + '</td>' +
         '<td style="font-size:0.72rem">' + (p.admitted_at ? formatDate(p.admitted_at) : '—') + '</td>' +
         '<td style="display:flex;gap:4px">' +
-          (p.payment_status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','verified',this)">✓ Verify</button><button class="btn btn-danger btn-sm" onclick="verifyPayment('' + escHtml(p.id) + '','rejected',this)">✕</button>' : '') +
+          (p.payment_status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="verifyPayment(\'' + escHtml(p.id) + '\',\'verified\',this)">✓ Verify</button><button class="btn btn-danger btn-sm" onclick="verifyPayment(\'' + escHtml(p.id) + '\',\'rejected\',this)">✕</button>' : '') +
         '</td></tr>';
     });
     html += '</tbody></table></div>';
@@ -1348,7 +1348,7 @@ async function loadSubjectsList() {
       html += '<tr><td>' + (s.icon ? s.icon + ' ' : '') + escHtml(s.name) + '</td>' +
         '<td>' + escHtml(s.path_type) + '</td><td>' + escHtml(level) + '</td>' +
         '<td>' + (s.topic_count||0) + '</td>' +
-        '<td><button class="btn btn-danger btn-sm" onclick="deleteSubject('' + s.id + '')">Delete</button></td></tr>';
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteSubject(\'' + s.id + '\')">Delete</button></td></tr>';
     });
     html += '</tbody></table></div>';
     el.innerHTML = html;
@@ -1424,7 +1424,7 @@ async function filterTopicsList() {
     var html = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Resources</th><th>Actions</th></tr></thead><tbody>';
     topics.forEach(function(t) {
       html += '<tr><td>' + escHtml(t.title) + '</td><td>' + (t.resource_count||0) + '</td>' +
-        '<td><button class="btn btn-danger btn-sm" onclick="deleteTopic('' + escHtml(t.id) + '', '' + subjectId + '')">Delete</button></td></tr>';
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteTopic(\'' + escHtml(t.id) + '\', \'' + escHtml(subjectId) + '\')">Delete</button></td></tr>';
     });
     html += '</tbody></table></div>';
     listEl.innerHTML = html;
