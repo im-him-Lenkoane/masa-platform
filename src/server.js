@@ -14,6 +14,7 @@ const pgSession = require('connect-pg-simple')(session);
 const { pool } = require('./db/pool');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy for secure cookies
 const PORT = process.env.PORT || 3000;
 
 // ── Security middleware ──────────────────────────
