@@ -1157,7 +1157,7 @@ async function loadSessionsList() {
           '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
             (s.status === 'scheduled' ? '<button class="btn btn-primary btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\',\'live\')">▶ Start</button>' : '') +
             (s.status === 'live'      ? '<button class="btn btn-danger btn-sm" onclick="setSessionStatus(\'' + escHtml(s.id) + '\',\'ended\')">■ End</button>' : '') +
-            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants(\'' + escHtml(s.id) + '\',\'' + escHtml(s.title).replace(/'/g,"\\'") + '\')">👥</button>' +
+            '<button class="btn btn-ghost btn-sm" onclick="viewParticipants(\'' + escHtml(s.id) + '\',\'' + escHtml(s.title).replace(/\'/g, " ") + '\')">👥</button>' +
             '<button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + escHtml(s.id) + '\')">✕</button>' +
           '</td></tr>';
       });
