@@ -102,6 +102,7 @@
       <button class="sidebar-btn" onclick="showPanel('branding', this)">🎨 Branding & Logo</button>
 
       <div class="sidebar-label">Admin</div>
+      <button class="sidebar-btn" onclick="showPanel('resources', this)">📦 Resources</button>
       <button class="sidebar-btn" onclick="showPanel('users', this)">👥 Admin Users</button>
       <button class="sidebar-btn" onclick="showPanel('team', this)">👥 Team Members</button>
     </aside>
@@ -155,6 +156,54 @@
           <button class="btn btn-primary" onclick="uploadVideo()">Add Video →</button>
         </div>
       </div>
+
+      <!-- RESOURCES -->
+<div class="section-panel" id="panel-resources">
+  <h2 style="margin-bottom:24px">📦 Resource Management</h2>
+
+  <!-- Filters -->
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Filter Resources</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grade</label>
+        <select id="res-filter-grade" class="form-control" onchange="filterResources()">
+          <option value="">All Grades</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <select id="res-filter-subject" class="form-control" onchange="filterResources()">
+          <option value="">All Subjects</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Topic</label>
+        <select id="res-filter-topic" class="form-control" onchange="filterResources()">
+          <option value="">All Topics</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="res-filter-type" class="form-control" onchange="filterResources()">
+          <option value="">All Types</option>
+          <option value="video">Video</option>
+          <option value="notes">Notes</option>
+          <option value="pdf">PDF</option>
+          <option value="slides">Slides</option>
+          <option value="practice_questions">Practice Questions</option>
+          <option value="exam_prep">Exam Prep</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources List -->
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">All Resources</h3>
+    <div id="resources-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
 
       <!-- FILES -->
       <div class="section-panel" id="panel-content-files">
@@ -701,6 +750,7 @@ function showPanel(name, btn) {
     'grades':         loadGradesList,
     'faculties':      loadFacultiesList,
     'subjects':       loadSubjectsList,
+    'resources': function() { loadResourceFilters(); filterResources(); },
     'topics':         loadAllTopics,
     'branding':       loadBrandingPreview,
     'team': loadTeamList,
@@ -1730,6 +1780,60 @@ async function deleteTeamMember(id) {
   try {
     await apiFetch('/api/team/' + id, { method: 'DELETE' });
     loadTeamList();
+  } catch(err) { alert(err.message); }
+}
+
+// ===== RESOURCES =====
+async function loadResourceFilters() {
+  try {
+    const grades = await apiFetch('/api/grades');
+    const subjects = await apiFetch('/api/subjects');
+    document.getElementById('res-filter-grade').innerHTML = '<option value="">All Grades</option>' +
+      grades.map(g => `<option value="${g.id}">${escHtml(g.display_name||g.name)}</option>`).join('');
+    document.getElementById('res-filter-subject').innerHTML = '<option value="">All Subjects</option>' +
+      subjects.map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+  } catch(err) { console.error(err); }
+}
+
+async function filterResources() {
+  const grade_id = document.getElementById('res-filter-grade').value;
+  const subject_id = document.getElementById('res-filter-subject').value;
+  const topic_id = document.getElementById('res-filter-topic').value;
+  const type = document.getElementById('res-filter-type').value;
+  let url = '/api/resources?';
+  if (grade_id) url += `grade_id=${grade_id}&`;
+  if (subject_id) url += `subject_id=${subject_id}&`;
+  if (topic_id) url += `topic_id=${topic_id}&`;
+  if (type) url += `type=${type}&`;
+  try {
+    document.getElementById('resources-list').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+    const resources = await apiFetch(url);
+    if (!resources.length) {
+      document.getElementById('resources-list').innerHTML = '<p>No resources found.</p>';
+      return;
+    }
+    let html = '<table class="table"><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Subject</th><th>Action</th></tr></thead><tbody>';
+    resources.forEach(r => {
+      html += `<tr>
+        <td>${escHtml(r.title)}</td>
+        <td><span class="badge badge-blue">${escHtml(r.type)}</span></td>
+        <td>${escHtml(r.topic_name||'')}</td>
+        <td>${escHtml(r.subject_name||'')}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteResource('${r.id}')">Delete</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('resources-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('resources-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function deleteResource(id) {
+  if (!confirm('Delete this resource?')) return;
+  try {
+    await apiFetch('/api/resources/' + id, { method: 'DELETE' });
+    filterResources();
   } catch(err) { alert(err.message); }
 }
 

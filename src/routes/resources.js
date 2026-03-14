@@ -19,6 +19,32 @@ function extractYouTubeId(url) {
   }
   return null;
 }
+// GET /api/resources (with filters)
+router.get('/', async (req, res) => {
+  try {
+    const { topic_id, subject_id, type, grade_id } = req.query;
+    let conditions = ['r.is_active=true'];
+    let params = [];
+    let i = 1;
+
+    if (topic_id) { conditions.push(`r.topic_id=$${i++}`); params.push(topic_id); }
+    if (type) { conditions.push(`r.type=$${i++}`); params.push(type); }
+    if (subject_id) { conditions.push(`t.subject_id=$${i++}`); params.push(subject_id); }
+    if (grade_id) { conditions.push(`s.grade_id=$${i++}`); params.push(grade_id); }
+
+    const result = await query(`
+      SELECT r.*, t.title as topic_name, s.name as subject_name
+      FROM resources r
+      LEFT JOIN topics t ON r.topic_id=t.id
+      LEFT JOIN subjects s ON t.subject_id=s.id
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY r.created_at DESC
+    `, params);
+    res.json(result.rows);
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/resources/:id
 router.get('/:id', async (req, res) => {
