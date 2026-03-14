@@ -121,52 +121,79 @@
       </div>
 
       <!-- VIDEOS -->
-      <div class="section-panel" id="panel-content-video">
-        <h2 style="margin-bottom:8px">Upload YouTube Video</h2>
-        <p style="color:var(--grey-light);font-size:0.82rem;margin-bottom:24px">Add a YouTube video link to a topic. The video stays on YouTube — only the link is stored.</p>
-        <div class="card" style="padding:24px;margin-bottom:24px">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Subject</label>
-              <select id="vid-subject" onchange="loadTopicsForSelect('vid-topic', this.value)">
-                <option value="">Select subject...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Topic</label>
-              <select id="vid-topic"><option value="">Select topic...</option></select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Video Title</label>
-            <input type="text" id="vid-title" placeholder="e.g. Newton's Laws — Introduction">
-          </div>
-          <div class="form-group">
-            <label>YouTube URL</label>
-            <input type="url" id="vid-url" placeholder="https://www.youtube.com/watch?v=...">
-            <div class="hint">Paste the full YouTube URL. Private or age-restricted videos won't work.</div>
-          </div>
-          <div class="form-group">
-  <label>Transcript (JSON format)</label>
-  <textarea id="vid-transcript" class="form-control" rows="4" 
-    placeholder='[{"time":0,"text":"Welcome to this lesson..."},{"time":10,"text":"Today we cover..."}]'></textarea>
-  </div>
-<div class="form-group">
-  <label>Thumbnail URL (optional)</label>
-  <input type="text" id="vid-thumbnail" placeholder="https://..." class="form-control">
-</div>
-          <div class="form-group">
-            <label>Description (optional)</label>
-            <textarea id="vid-desc" placeholder="Brief description of what this video covers..." style="min-height:80px"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Transcript (optional)</label>
-            <textarea id="vid-transcript" placeholder="Paste video transcript here for accessibility and offline reading..." style="min-height:100px"></textarea>
-          </div>
-          <button class="btn btn-primary" onclick="uploadVideo()">Add Video →</button>
-        </div>
-      </div>
+      <div class="card" style="padding:24px;margin-bottom:24px">
+  <h3 style="margin-bottom:16px">Add Video</h3>
 
+  <!-- Video Source Toggle -->
+  <div class="form-group">
+    <label>Video Source</label>
+    <div style="display:flex;gap:12px;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="radio" name="vid-source" value="youtube" checked 
+          onchange="toggleVideoSource('youtube')"> YouTube URL
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="radio" name="vid-source" value="upload"
+          onchange="toggleVideoSource('upload')"> Upload Video File
+      </label>
+    </div>
+  </div>
+
+  <!-- YouTube Option -->
+  <div id="vid-youtube-section">
+    <div class="form-group">
+      <label>YouTube URL</label>
+      <input type="text" id="vid-url" placeholder="https://youtube.com/watch?v=..." class="form-control">
+    </div>
+  </div>
+
+  <!-- Upload Option -->
+  <div id="vid-upload-section" style="display:none">
+    <div class="form-group">
+      <label>Video File (MP4, WebM)</label>
+      <input type="file" id="vid-file" accept="video/mp4,video/webm" class="form-control">
+    </div>
+  </div>
+
+  <!-- Common Fields -->
+  <div class="form-row">
+    <div class="form-group">
+      <label>Subject</label>
+      <select id="vid-subject" class="form-control" onchange="loadTopicsForSelect('vid-topic', this.value)">
+        <option value="">Select subject...</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Topic</label>
+      <select id="vid-topic" class="form-control">
+        <option value="">Select topic...</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Title</label>
+    <input type="text" id="vid-title" placeholder="Video title" class="form-control">
+  </div>
+
+  <div class="form-group">
+    <label>Description (optional)</label>
+    <textarea id="vid-description" class="form-control" rows="2" placeholder="Brief description..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Thumbnail URL (optional)</label>
+    <input type="text" id="vid-thumbnail" placeholder="https://..." class="form-control">
+  </div>
+
+  <div class="form-group">
+    <label>Transcript (JSON — optional)</label>
+    <textarea id="vid-transcript" class="form-control" rows="3" 
+      placeholder='[{"time":0,"text":"Welcome..."},{"time":10,"text":"Today we cover..."}]'></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="saveVideo()">Save Video →</button>
+</div>
       <!-- RESOURCES -->
 <div class="section-panel" id="panel-resources">
   <h2 style="margin-bottom:24px">📦 Resource Management</h2>
@@ -2090,4 +2117,69 @@ showPanel = function(name, btn) {
     loadSubjectsForSelects(['ses-subject']);
   }
 };
+//video source toggle
+function toggleVideoSource(source) {
+  document.getElementById('vid-youtube-section').style.display = source === 'youtube' ? 'block' : 'none';
+  document.getElementById('vid-upload-section').style.display = source === 'upload' ? 'block' : 'none';
+}
+
+async function saveVideo() {
+  const source = document.querySelector('input[name="vid-source"]:checked').value;
+  const topicId = document.getElementById('vid-topic').value;
+  const title = document.getElementById('vid-title').value.trim();
+  const description = document.getElementById('vid-description').value.trim();
+  const thumbnail = document.getElementById('vid-thumbnail').value.trim();
+  const transcript = document.getElementById('vid-transcript').value.trim();
+
+  if (!topicId || !title) return alert('Fill in topic and title!');
+
+  if (source === 'youtube') {
+    const youtubeUrl = document.getElementById('vid-url').value.trim();
+    if (!youtubeUrl) return alert('Enter YouTube URL!');
+    try {
+      await apiFetch('/api/resources/video', {
+        method: 'POST',
+        body: { 
+          topic_id: topicId, 
+          title, 
+          description, 
+          youtube_url: youtubeUrl,
+          transcript,
+          thumbnail_url: thumbnail
+        }
+      });
+      showToast('Video saved! ✅', 'success');
+      document.getElementById('vid-url').value = '';
+      document.getElementById('vid-title').value = '';
+      document.getElementById('vid-description').value = '';
+      document.getElementById('vid-thumbnail').value = '';
+      document.getElementById('vid-transcript').value = '';
+    } catch(err) { alert(err.message); }
+
+  } else {
+    const file = document.getElementById('vid-file').files[0];
+    if (!file) return alert('Select a video file!');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('topic_id', topicId);
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('type', 'video');
+    formData.append('thumbnail_url', thumbnail);
+    formData.append('transcript', transcript);
+    try {
+      showToast('Uploading video...', 'info', 5000);
+      const res = await fetch('/api/resources/file', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+      showToast('Video uploaded! ✅', 'success');
+      document.getElementById('vid-file').value = '';
+      document.getElementById('vid-title').value = '';
+    } catch(err) { alert(err.message); }
+  }
+}
+
 </script>
