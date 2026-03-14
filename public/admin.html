@@ -1943,8 +1943,17 @@ async function uploadBanner(entityType, entityId, input) {
 
 // ===== PLACEHOLDERS =====
 async function loadPlaceholderTypes() {
+  console.log('loadPlaceholderTypes called');
   try {
     const types = await apiFetch('/api/placeholders/types');
+    console.log('types received:', types);
+    const el = document.getElementById('placeholder-types-list');
+    console.log('element found:', el);
+    if (!el) { console.error('placeholder-types-list NOT FOUND'); return; }
+    if (!types.length) {
+      el.innerHTML = '<p>No types found</p>';
+      return;
+    }
     let html = '<table class="table"><thead><tr><th>Icon</th><th>Name</th><th>Default</th><th>Action</th></tr></thead><tbody>';
     types.forEach(t => {
       html += `<tr>
@@ -1955,8 +1964,11 @@ async function loadPlaceholderTypes() {
       </tr>`;
     });
     html += '</tbody></table>';
-    document.getElementById('placeholder-types-list').innerHTML = html;
-  } catch(err) { console.error(err); }
+    el.innerHTML = html;
+  } catch(err) {
+    console.error('loadPlaceholderTypes error:', err);
+    document.getElementById('placeholder-types-list').innerHTML = '<p style="color:var(--error)">'+err.message+'</p>';
+  }
 }
 
 async function addPlaceholderType() {
