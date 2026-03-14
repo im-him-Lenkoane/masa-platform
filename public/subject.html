@@ -218,19 +218,19 @@ async function buildTopics(topics, resources) {
     return;
   }
 
-  var html = '';
-  topics.forEach(function(t, i) {
-    var topicResources = resources.filter(function(r) { return r.topic_id === t.id; });
-    var num = (i + 1 < 10 ? '0' : '') + (i + 1);
+  let html = '';
+  for (let i = 0; i < topics.length; i++) {
+    t = topics[i];
 
-    var resourceCards = '';
+    let resourceCards = '';
     if (topicResources.length) {
-      topicResources.forEach(function(r) {
+      topicResources.forEach(r => {
         resourceCards += buildResourceCard(r);
       });
-      resourceCards = '<div class="resource-grid">' + resourceCards + '</div>';
+      resourceCards = '<div class="resources-grid">' + resourceCards + '</div>';
     } else {
-      resourceCards = await buildPlaceholderBoxes(t.id);
+        resourceCards = await buildPlaceholderBoxes(t.id);
+      }
     }
 
     html +=
@@ -252,7 +252,7 @@ async function buildTopics(topics, resources) {
           '</div>' +
         '</div>' +
       '</div>';
-  });
+  }
 
   container.innerHTML = html;
   initTopicAccordions();
