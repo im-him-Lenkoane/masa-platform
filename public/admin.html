@@ -121,31 +121,30 @@
       </div>
 
       <!-- VIDEOS -->
-      <div class="card" style="padding:24px;margin-bottom:24px">
-  <h3 style="margin-bottom:16px">Add Video</h3>
-
-  <!-- Video Source Toggle -->
-  <div class="form-group">
-    <label>Video Source</label>
-    <div style="display:flex;gap:12px;margin-bottom:16px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="radio" name="vid-source" value="youtube" checked 
-          onchange="toggleVideoSource('youtube')"> YouTube URL
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="radio" name="vid-source" value="upload"
-          onchange="toggleVideoSource('upload')"> Upload Video File
-      </label>
-    </div>
-  </div>
-
-  <!-- YouTube Option -->
-  <div id="vid-youtube-section">
-    <div class="form-group">
-      <label>YouTube URL</label>
-      <input type="text" id="vid-url" placeholder="https://youtube.com/watch?v=..." class="form-control">
-    </div>
-  </div>
+       <div class="section-panel" id="panel-content-video">
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="margin-bottom:16px">Add Video</h3>
+          <!-- Video Source Toggle -->
+           <div class="form-group">
+            <label>Video Source</label>
+            <div style="display:flex;gap:12px;margin-bottom:16px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="vid-source" value="youtube" checked 
+                onchange="toggleVideoSource('youtube')"> YouTube URL
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="vid-source" value="upload"
+                onchange="toggleVideoSource('upload')"> Upload Video File
+              </label>
+            </div>
+          </div>
+          <!-- YouTube Option -->
+           <div id="vid-youtube-section">
+            <div class="form-group">
+              <label>YouTube URL</label>
+              <input type="text" id="vid-url" placeholder="https://youtube.com/watch?v=..." class="form-control">
+            </div>
+          </div>
 
   <!-- Upload Option -->
   <div id="vid-upload-section" style="display:none">
