@@ -102,6 +102,7 @@
       <button class="sidebar-btn" onclick="showPanel('branding', this)">🎨 Branding & Logo</button>
 
       <div class="sidebar-label">Admin</div>
+      <button class="sidebar-btn" onclick="showPanel('placeholders', this)">🗂️ Placeholders</button>
       <button class="sidebar-btn" onclick="showPanel('resources', this)">📦 Resources</button>
       <button class="sidebar-btn" onclick="showPanel('users', this)">👥 Admin Users</button>
       <button class="sidebar-btn" onclick="showPanel('team', this)">👥 Team Members</button>
@@ -160,6 +161,65 @@
       <!-- RESOURCES -->
 <div class="section-panel" id="panel-resources">
   <h2 style="margin-bottom:24px">📦 Resource Management</h2>
+
+  <!-- PLACEHOLDERS -->
+<div class="section-panel" id="panel-placeholders">
+  <h2 style="margin-bottom:24px">🗂️ Placeholder Types</h2>
+
+  <!-- Add Custom Type -->
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Add Custom Placeholder</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="ph-name" placeholder="e.g. Worked Examples" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Icon (emoji)</label>
+        <input type="text" id="ph-icon" placeholder="e.g. 💡" class="form-control" maxlength="2">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addPlaceholderType()">Add Type</button>
+  </div>
+
+  <!-- All Types -->
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">All Placeholder Types</h3>
+    <div id="placeholder-types-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- Toggle Per Topic -->
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <h3 style="margin-bottom:16px">Toggle Per Topic</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Subject</label>
+        <select id="ph-topic-subject" class="form-control" onchange="loadTopicsForPlaceholder()">
+          <option value="">Select subject...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Topic</label>
+        <select id="ph-topic-select" class="form-control" onchange="loadTopicPlaceholders()">
+          <option value="">Select topic...</option>
+        </select>
+      </div>
+    </div>
+    <div id="topic-placeholder-toggles"></div>
+  </div>
+
+  <!-- Toggle Per Subject -->
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Toggle Per Subject</h3>
+    <div class="form-group">
+      <label>Subject</label>
+      <select id="ph-subject-select" class="form-control" onchange="loadSubjectPlaceholders()">
+        <option value="">Select subject...</option>
+      </select>
+    </div>
+    <div id="subject-placeholder-toggles"></div>
+  </div>
+</div>
 
   <!-- Filters -->
   <div class="card" style="padding:24px;margin-bottom:24px">
@@ -1843,6 +1903,118 @@ async function uploadBanner(entityType, entityId, input) {
     if (entityType === 'faculty') loadFaculties();
     if (entityType === 'subject') loadSubjects();
   } catch(err) { alert(err.message); }
+}
+
+// ===== PLACEHOLDERS =====
+async function loadPlaceholderTypes() {
+  try {
+    const types = await apiFetch('/api/placeholders/types');
+    let html = '<table class="table"><thead><tr><th>Icon</th><th>Name</th><th>Default</th><th>Action</th></tr></thead><tbody>';
+    types.forEach(t => {
+      html += `<tr>
+        <td>${t.icon}</td>
+        <td>${escHtml(t.name)}</td>
+        <td>${t.is_default ? '✅ Default' : '🔧 Custom'}</td>
+        <td>${!t.is_default ? `<button class="btn btn-danger btn-sm" onclick="deletePlaceholderType('${t.id}')">Delete</button>` : '-'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('placeholder-types-list').innerHTML = html;
+  } catch(err) { console.error(err); }
+}
+
+async function addPlaceholderType() {
+  const name = document.getElementById('ph-name').value.trim();
+  const icon = document.getElementById('ph-icon').value.trim();
+  if (!name) return alert('Enter a name');
+  try {
+    await apiFetch('/api/placeholders/types', { method: 'POST', body: { name, icon } });
+    document.getElementById('ph-name').value = '';
+    document.getElementById('ph-icon').value = '';
+    loadPlaceholderTypes();
+  } catch(err) { alert(err.message); }
+}
+
+async function deletePlaceholderType(id) {
+  if (!confirm('Delete this placeholder type?')) return;
+  try {
+    await apiFetch('/api/placeholders/types/' + id, { method: 'DELETE' });
+    loadPlaceholderTypes();
+  } catch(err) { alert(err.message); }
+}
+
+async function loadTopicsForPlaceholder() {
+  const subjectId = document.getElementById('ph-topic-subject').value;
+  if (!subjectId) return;
+  try {
+    const topics = await apiFetch('/api/topics?subject_id=' + subjectId);
+    document.getElementById('ph-topic-select').innerHTML = '<option value="">Select topic...</option>' +
+      topics.map(t => `<option value="${t.id}">${escHtml(t.title)}</option>`).join('');
+  } catch(err) { console.error(err); }
+}
+
+async function loadTopicPlaceholders() {
+  const topicId = document.getElementById('ph-topic-select').value;
+  if (!topicId) return;
+  try {
+    const types = await apiFetch('/api/placeholders/topic/' + topicId);
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">';
+    types.forEach(t => {
+      html += `<label style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg-card);border-radius:8px;cursor:pointer">
+        <input type="checkbox" ${t.is_enabled ? 'checked' : ''} 
+          onchange="toggleTopicPlaceholder('${topicId}','${t.id}',this.checked)">
+        ${t.icon} ${escHtml(t.name)}
+      </label>`;
+    });
+    html += '</div>';
+    document.getElementById('topic-placeholder-toggles').innerHTML = html;
+  } catch(err) { console.error(err); }
+}
+
+async function toggleTopicPlaceholder(topicId, typeId, enabled) {
+  try {
+    await apiFetch('/api/placeholders/topic/' + topicId + '/toggle', {
+      method: 'POST',
+      body: { placeholder_type_id: typeId, is_enabled: enabled }
+    });
+  } catch(err) { alert(err.message); }
+}
+
+async function loadSubjectPlaceholders() {
+  const subjectId = document.getElementById('ph-subject-select').value;
+  if (!subjectId) return;
+  try {
+    const types = await apiFetch('/api/placeholders/subject/' + subjectId);
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">';
+    types.forEach(t => {
+      html += `<label style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg-card);border-radius:8px;cursor:pointer">
+        <input type="checkbox" ${t.is_enabled ? 'checked' : ''} 
+          onchange="toggleSubjectPlaceholder('${subjectId}','${t.id}',this.checked)">
+        ${t.icon} ${escHtml(t.name)}
+      </label>`;
+    });
+    html += '</div>';
+    document.getElementById('subject-placeholder-toggles').innerHTML = html;
+  } catch(err) { console.error(err); }
+}
+
+async function toggleSubjectPlaceholder(subjectId, typeId, enabled) {
+  try {
+    await apiFetch('/api/placeholders/subject/' + subjectId + '/toggle', {
+      method: 'POST',
+      body: { placeholder_type_id: typeId, is_enabled: enabled }
+    });
+  } catch(err) { alert(err.message); }
+}
+
+async function loadPlaceholderSubjectSelects() {
+  try {
+    const subjects = await apiFetch('/api/subjects');
+    const opts = '<option value="">Select subject...</option>' +
+      subjects.map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+    document.getElementById('ph-topic-subject').innerHTML = opts;
+    document.getElementById('ph-subject-select').innerHTML = opts;
+  } catch(err) { console.error(err); }
 }
 
 // ===== RESOURCES =====

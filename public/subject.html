@@ -210,7 +210,7 @@ async function loadSubject(subjectId) {
 }
 
 // ── BUILD TOPICS ──────────────────────────────────
-function buildTopics(topics, resources) {
+async function buildTopics(topics, resources) {
   const container = document.getElementById('topics-container');
 
   if (!topics.length) {
@@ -230,7 +230,7 @@ function buildTopics(topics, resources) {
       });
       resourceCards = '<div class="resource-grid">' + resourceCards + '</div>';
     } else {
-      resourceCards = '<p style="padding:16px;font-size:0.8rem;color:var(--grey-light)">Resources for this topic are being prepared. Check back soon!</p>';
+      resourceCards = await buildPlaceholderBoxes(t.id);
     }
 
     html +=
@@ -257,7 +257,57 @@ function buildTopics(topics, resources) {
   container.innerHTML = html;
   initTopicAccordions();
 }
+async function buildPlaceholderBoxes(topicId) {
+  try {
+    const placeholders = await apiFetch('/api/placeholders/topic/' + topicId);
+    const enabled = placeholders.filter(p => p.is_enabled);
+    if (!enabled.length) return '<p style="padding:16px;font-size:0.8rem;color:var(--grey-light)">Content coming soon!</p>';
 
+    const resources = allResources.filter(r => r.topic_id === topicId);
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px">';
+    enabled.forEach(p => {
+      const typeName = p.name.toLowerCase().replace(/ /g,'_');
+      const related = resources.filter(r => r.type === typeName);
+      html += `
+        <div data-placeholder="${p.name}" 
+          style="background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer"
+          onclick="openPlaceholder('${topicId}','${p.name}','${p.icon}')">
+          <div style="font-size:1.8rem;margin-bottom:8px">${p.icon}</div>
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:4px">${escHtml(p.name)}</div>
+          ${related.length 
+            ? `<div style="font-size:0.7rem;color:var(--primary)">${related.length} available</div>`
+            : '<div style="font-size:0.7rem;color:var(--grey-mid)">Coming soon</div>'
+          }
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+  } catch(err) {
+    return '<p style="padding:16px;color:var(--grey-light)">Content coming soon!</p>';
+  }
+}
+
+function openPlaceholder(topicId, typeName, icon) {
+  const resources = allResources.filter(r => 
+    r.topic_id === topicId && 
+    r.type === typeName.toLowerCase().replace(/ /g,'_')
+  );
+  if (!resources.length) {
+    showToast(icon + ' ' + typeName + ' coming soon!', 'info');
+    return;
+  }
+  const r = resources[0];
+  if (r.type === 'video' && r.youtube_id) {
+    openVideo(r.id, r.youtube_id, r.title, r.description||'', r.transcript||'');
+  } else if (r.type === 'notes' && r.content) {
+    openNotes(r.title, r.content);
+  } else if (r.file_path) {
+    window.open(r.file_path, '_blank');
+  } else {
+    showToast('Content coming soon!', 'info');
+  }
+}
 // ── BUILD RESOURCE CARD ───────────────────────────
 function buildResourceCard(r) {
   var cfg    = resourceConfig[r.type] || { icon: '📎', label: r.type };
