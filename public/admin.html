@@ -318,7 +318,7 @@
         </div>
         <div id="events-list"><div class="loading-state"><div class="spinner"></div></div></div>
       </div>
-
+      
       <!-- SPONSORS -->
       <div class="section-panel" id="panel-sponsors">
         <h2 style="margin-bottom:24px">Sponsors</h2>
@@ -327,6 +327,17 @@
           <div class="form-row">
             <div class="form-group"><label>Sponsor Name</label><input type="text" id="sp-name" placeholder="Company name"></div>
             <div class="form-group"><label>Website URL</label><input type="url" id="sp-url" placeholder="https://..."></div>
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea id="sponsor-description" placeholder="Brief description..." class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="sponsor-type" class="form-control">
+              <option value="sponsor">Sponsor</option>
+              <option value="partner">Partner</option>
+            </select>
           </div>
           <div class="form-row">
             <div class="form-group"><label>Tier</label>
