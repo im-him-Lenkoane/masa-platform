@@ -1354,19 +1354,30 @@ async function toggleUser(id) {
 }
 // ── GRADES ───────────────────────────────────────
 async function loadGradesList() {
-  var el = document.getElementById('grades-list');
-  if (!el) return;
   try {
-    var grades = await apiFetch('/api/grades');
-    if (!grades.length) { el.innerHTML = '<p style="color:var(--grey-light)">No grades yet.</p>'; return; }
-    var html = '<div class="table-wrap"><table><thead><tr><th>Display Name</th><th>Level</th><th>Subjects</th><th>Actions</th></tr></thead><tbody>';
-    grades.forEach(function(g) {
-      html += '<tr><td>' + escHtml(g.display_name) + '</td><td>' + escHtml(g.name) + '</td><td>' + (g.subject_count||0) + '</td>' +
-        '<td><button class="btn btn-danger btn-sm" onclick="deleteGrade(' + g.id + ')">Delete</button></td></tr>';
+    const grades = await apiFetch('/api/grades');
+    let html = '<table class="table"><thead><tr><th>Icon</th><th>Name</th><th>Banner</th><th>Actions</th></tr></thead><tbody>';
+    grades.forEach(g => {
+      html += `<tr>
+        <td>
+          ${g.icon_url ? `<img src="${g.icon_url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No icon</span>'}
+          <input type="file" accept="image/*" style="display:none" id="grade-icon-${g.id}" onchange="uploadIcon('grade','${g.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('grade-icon-${g.id}').click()">Upload Icon</button>
+        </td>
+        <td>${escHtml(g.display_name||g.name)}</td>
+        <td>
+          ${g.banner_url ? `<img src="${g.banner_url}" style="width:80px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No banner</span>'}
+          <input type="file" accept="image/*" style="display:none" id="grade-banner-${g.id}" onchange="uploadBanner('grade','${g.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('grade-banner-${g.id}').click()">Upload Banner</button>
+        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteGrade('${g.id}')">Delete</button></td>
+      </tr>`;
     });
-    html += '</tbody></table></div>';
-    el.innerHTML = html;
-  } catch(err) { el.innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>'; }
+    html += '</tbody></table>';
+    document.getElementById('grades-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('grades-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
 }
 
 async function addGrade() {
@@ -1398,19 +1409,30 @@ async function deleteGrade(id) {
 
 // ── FACULTIES ─────────────────────────────────────
 async function loadFacultiesList() {
-  var el = document.getElementById('faculties-list');
-  if (!el) return;
   try {
-    var faculties = await apiFetch('/api/faculties');
-    if (!faculties.length) { el.innerHTML = '<p style="color:var(--grey-light)">No faculties yet.</p>'; return; }
-    var html = '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Slug</th><th>Subjects</th><th>Actions</th></tr></thead><tbody>';
-    faculties.forEach(function(f) {
-      html += '<tr><td>' + escHtml(f.name) + '</td><td style="font-family:var(--font-mono);font-size:0.75rem">' + escHtml(f.slug) + '</td><td>' + (f.subject_count||0) + '</td>' +
-        '<td><button class="btn btn-danger btn-sm" onclick="deleteFaculty(' + f.id + ')">Delete</button></td></tr>';
+    const faculties = await apiFetch('/api/faculties');
+    let html = '<table class="table"><thead><tr><th>Icon</th><th>Name</th><th>Banner</th><th>Actions</th></tr></thead><tbody>';
+    faculties.forEach(f => {
+      html += `<tr>
+        <td>
+          ${f.icon_url ? `<img src="${f.icon_url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No icon</span>'}
+          <input type="file" accept="image/*" style="display:none" id="fac-icon-${f.id}" onchange="uploadIcon('faculty','${f.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fac-icon-${f.id}').click()">Upload Icon</button>
+        </td>
+        <td>${escHtml(f.name)}</td>
+        <td>
+          ${f.banner_url ? `<img src="${f.banner_url}" style="width:80px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No banner</span>'}
+          <input type="file" accept="image/*" style="display:none" id="fac-banner-${f.id}" onchange="uploadBanner('faculty','${f.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fac-banner-${f.id}').click()">Upload Banner</button>
+        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteFaculty('${f.id}')">Delete</button></td>
+      </tr>`;
     });
-    html += '</tbody></table></div>';
-    el.innerHTML = html;
-  } catch(err) { el.innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>'; }
+    html += '</tbody></table>';
+    document.getElementById('faculties-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('faculties-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
 }
 
 async function addFaculty() {
@@ -1441,35 +1463,31 @@ var allGrades = [];
 var allFaculties = [];
 
 async function loadSubjectsList() {
-  var el = document.getElementById('subjects-list');
-  if (!el) return;
-  // Load grades and faculties for dropdowns
   try {
-    allGrades = await apiFetch('/api/grades');
-    allFaculties = await apiFetch('/api/faculties');
-    // Populate grade select
-    var gradeSelect = document.getElementById('subj-grade');
-    gradeSelect.innerHTML = '<option value="">Select grade...</option>' +
-      allGrades.map(function(g) { return '<option value="' + g.id + '">' + escHtml(g.display_name) + '</option>'; }).join('');
-    // Populate faculty select
-    var facSelect = document.getElementById('subj-faculty');
-    facSelect.innerHTML = '<option value="">Select faculty...</option>' +
-      allFaculties.map(function(f) { return '<option value="' + f.id + '">' + escHtml(f.name) + '</option>'; }).join('');
-  } catch(e) {}
-  try {
-    var subjects = await apiFetch('/api/subjects');
-    if (!subjects.length) { el.innerHTML = '<p style="color:var(--grey-light)">No subjects yet.</p>'; return; }
-    var html = '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Grade / Faculty</th><th>Topics</th><th>Actions</th></tr></thead><tbody>';
-    subjects.forEach(function(s) {
-      var level = s.path_type === 'school' ? (s.grade_display_name || ('Grade ' + s.grade_id)) : 'Tertiary';
-      html += '<tr><td>' + (s.icon ? s.icon + ' ' : '') + escHtml(s.name) + '</td>' +
-        '<td>' + escHtml(s.path_type) + '</td><td>' + escHtml(level) + '</td>' +
-        '<td>' + (s.topic_count||0) + '</td>' +
-        '<td><button class="btn btn-danger btn-sm" onclick="deleteSubject(\'' + s.id + '\')">Delete</button></td></tr>';
+    const subjects = await apiFetch('/api/subjects');
+    let html = '<table class="table"><thead><tr><th>Icon</th><th>Name</th><th>Grade</th><th>Banner</th><th>Actions</th></tr></thead><tbody>';
+    subjects.forEach(s => {
+      html += `<tr>
+        <td>
+          ${s.icon_url ? `<img src="${s.icon_url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No icon</span>'}
+          <input type="file" accept="image/*" style="display:none" id="sub-icon-${s.id}" onchange="uploadIcon('subject','${s.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('sub-icon-${s.id}').click()">Upload Icon</button>
+        </td>
+        <td>${escHtml(s.name)}</td>
+        <td>${escHtml(s.grade_name||'')}</td>
+        <td>
+          ${s.banner_url ? `<img src="${s.banner_url}" style="width:80px;height:32px;object-fit:cover;border-radius:4px">` : '<span style="opacity:0.4">No banner</span>'}
+          <input type="file" accept="image/*" style="display:none" id="sub-banner-${s.id}" onchange="uploadBanner('subject','${s.id}',this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('sub-banner-${s.id}').click()">Upload Banner</button>
+        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteSubject('${s.id}')">Delete</button></td>
+      </tr>`;
     });
-    html += '</tbody></table></div>';
-    el.innerHTML = html;
-  } catch(err) { el.innerHTML = '<p style="color:var(--error)">' + escHtml(err.message) + '</p>'; }
+    html += '</tbody></table>';
+    document.getElementById('subjects-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('subjects-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
 }
 
 function toggleSubjectTypeFields() {
@@ -1780,6 +1798,50 @@ async function deleteTeamMember(id) {
   try {
     await apiFetch('/api/team/' + id, { method: 'DELETE' });
     loadTeamList();
+  } catch(err) { alert(err.message); }
+}
+
+// ===== IMAGE UPLOADS =====
+async function uploadIcon(entityType, entityId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('entity_type', entityType);
+  formData.append('entity_id', entityId);
+  try {
+    const res = await fetch('/api/images/icon', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    alert('Icon uploaded! ✅');
+    if (entityType === 'grade') loadGrades();
+    if (entityType === 'faculty') loadFaculties();
+    if (entityType === 'subject') loadSubjects();
+    if (entityType === 'team_member') loadTeamList();
+  } catch(err) { alert(err.message); }
+}
+
+async function uploadBanner(entityType, entityId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('entity_type', entityType);
+  formData.append('entity_id', entityId);
+  try {
+    const res = await fetch('/api/images/banner', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    alert('Banner uploaded! ✅');
+    if (entityType === 'grade') loadGrades();
+    if (entityType === 'faculty') loadFaculties();
+    if (entityType === 'subject') loadSubjects();
   } catch(err) { alert(err.message); }
 }
 
