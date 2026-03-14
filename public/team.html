@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meet the Builders | M@SA</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .team-hero {
+      background: var(--bg-dark);
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+    .team-hero h1 {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .team-hero p {
+      color: var(--grey-light);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .team-section {
+      padding: 60px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .team-section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--primary);
+      display: inline-block;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .team-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .team-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .team-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 16px;
+      display: block;
+      border: 3px solid var(--primary);
+      background: var(--bg-dark);
+    }
+    .team-photo-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      border: 3px solid var(--primary);
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    .team-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .team-role {
+      font-size: 0.85rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .team-bio {
+      font-size: 0.85rem;
+      color: var(--grey-light);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .team-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .team-link {
+      color: var(--grey-mid);
+      text-decoration: none;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    .team-link:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .category-label {
+      display: inline-block;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .cat-founding { background: rgba(255,215,0,0.15); color: gold; }
+    .cat-director { background: rgba(0,200,150,0.15); color: var(--primary); }
+    .cat-builder { background: rgba(100,100,255,0.15); color: #88f; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <div class="header-spacer"></div>
+
+  <div class="team-hero">
+    <h1>Meet the Builders</h1>
+    <p>The people behind Messelaar @ STEM Academy — building free education for South Africa.</p>
+  </div>
+
+  <div id="founding-section" class="team-section" style="display:none">
+    <div class="team-section-title">⭐ Founding Members</div>
+    <div class="team-grid" id="founding-grid"></div>
+  </div>
+
+  <div id="director-section" class="team-section" style="display:none">
+    <div class="team-section-title">🏛️ Messelaars / Directors</div>
+    <div class="team-grid" id="director-grid"></div>
+  </div>
+
+  <div id="builder-section" class="team-section" style="display:none">
+    <div class="team-section-title">🔧 Builders</div>
+    <div class="team-grid" id="builder-grid"></div>
+  </div>
+
+  <div id="loading" style="text-align:center;padding:80px">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="site-footer"></div>
+  <script src="/js/app.js"></script>
+  <script>
+    async function loadTeam() {
+      try {
+        const members = await apiFetch('/api/team');
+        document.getElementById('loading').style.display = 'none';
+
+        const founding = members.filter(m => m.category === 'founding');
+        const directors = members.filter(m => m.category === 'director');
+        const builders = members.filter(m => m.category === 'builder');
+
+        if (founding.length) {
+          document.getElementById('founding-section').style.display = 'block';
+          document.getElementById('founding-grid').innerHTML = founding.map(renderCard).join('');
+        }
+        if (directors.length) {
+          document.getElementById('director-section').style.display = 'block';
+          document.getElementById('director-grid').innerHTML = directors.map(renderCard).join('');
+        }
+        if (builders.length) {
+          document.getElementById('builder-section').style.display = 'block';
+          document.getElementById('builder-grid').innerHTML = builders.map(renderCard).join('');
+        }
+
+        if (!members.length) {
+          document.getElementById('loading').innerHTML = '<p style="color:var(--grey-light)">Team members coming soon!</p>';
+          document.getElementById('loading').style.display = 'block';
+        }
+      } catch(err) {
+        document.getElementById('loading').innerHTML = '<p style="color:var(--error)">Failed to load team.</p>';
+      }
+    }
+
+    function renderCard(m) {
+      const catClass = m.category === 'founding' ? 'cat-founding' : m.category === 'director' ? 'cat-director' : 'cat-builder';
+      const catLabel = m.category === 'founding' ? 'Founding Member' : m.category === 'director' ? 'Director' : 'Builder';
+      const photo = m.photo_url
+        ? `<img src="${m.photo_url}" class="team-photo" alt="${m.full_name}">`
+        : `<div class="team-photo-placeholder">👤</div>`;
+      const links = [];
+      if (m.email) links.push(`<a href="mailto:${m.email}" class="team-link">✉ Email</a>`);
+      if (m.linkedin_url) links.push(`<a href="${m.linkedin_url}" target="_blank" class="team-link">in LinkedIn</a>`);
+      if (m.twitter_url) links.push(`<a href="${m.twitter_url}" target="_blank" class="team-link">𝕏 Twitter</a>`);
+      return `
+        <div class="team-card">
+          ${photo}
+          <span class="category-label ${catClass}">${catLabel}</span>
+          <div class="team-name">${m.full_name}</div>
+          <div class="team-role">${m.role || ''}</div>
+          <div class="team-bio">${m.bio || ''}</div>
+          ${links.length ? `<div class="team-links">${links.join('')}</div>` : ''}
+        </div>`;
+    }
+
+    loadTeam();
+  </script>
+</body>
+</html>

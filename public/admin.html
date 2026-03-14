@@ -103,6 +103,7 @@
 
       <div class="sidebar-label">Admin</div>
       <button class="sidebar-btn" onclick="showPanel('users', this)">👥 Admin Users</button>
+      <button class="sidebar-btn" onclick="showPanel('team', this)">👥 Team Members</button>
     </aside>
 
     <!-- Main Content -->
@@ -560,6 +561,60 @@
         </div>
         <div id="users-list"><div class="loading-state"><div class="spinner"></div></div></div>
       </div>
+      <!-- TEAM MEMBERS -->
+       <div class="section-panel" id="panel-team">
+        <h2 style="margin-bottom:24px">👥 Meet the Builders</h2>
+        <div class="card" style="padding:24px;margin-bottom:24px">
+          <h3 style="margin-bottom:16px">Add Team Member</h3>
+          <div class="form-row">
+            <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="team-name" placeholder="Full name" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Role/Title</label>
+        <input type="text" id="team-role" placeholder="e.g. Co-Founder" class="form-control">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="team-category" class="form-control">
+          <option value="founding">Founding Member</option>
+          <option value="director">Messelaar/Director</option>
+          <option value="builder">Builder</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Email (optional)</label>
+        <input type="email" id="team-email" placeholder="email@example.com" class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea id="team-bio" placeholder="Short bio..." class="form-control" rows="3"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Photo URL</label>
+        <input type="text" id="team-photo" placeholder="https://..." class="form-control">
+      </div>
+      <div class="form-group">
+        <label>LinkedIn URL (optional)</label>
+        <input type="text" id="team-linkedin" placeholder="https://linkedin.com/in/..." class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Twitter/X URL (optional)</label>
+      <input type="text" id="team-twitter" placeholder="https://twitter.com/..." class="form-control">
+    </div>
+    <button class="btn btn-primary" onclick="addTeamMember()">Add Member</button>
+  </div>
+  <div class="card" style="padding:24px">
+    <h3 style="margin-bottom:16px">Current Team</h3>
+    <div id="team-list"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
 
     </main>
   </div>
@@ -637,6 +692,7 @@ function showPanel(name, btn) {
     'subjects':       loadSubjectsList,
     'topics':         loadAllTopics,
     'branding':       loadBrandingPreview,
+    'team': loadTeamList,
   };
   if (loaders[name]) loaders[name]();
 }
@@ -1610,6 +1666,60 @@ async function admitParticipant() {
       loadParticipants(currentSessionId);
     }
   } catch(e) { showToast(e.message, 'error'); }
+}
+// ===== TEAM =====
+async function loadTeamList() {
+  try {
+    const members = await apiFetch('/api/team');
+    if (!members.length) {
+      document.getElementById('team-list').innerHTML = '<p>No team members yet.</p>';
+      return;
+    }
+    let html = '<table class="table"><thead><tr><th>Name</th><th>Role</th><th>Category</th><th>Action</th></tr></thead><tbody>';
+    members.forEach(m => {
+      html += `<tr>
+        <td>${escHtml(m.full_name)}</td>
+        <td>${escHtml(m.role||'')}</td>
+        <td>${escHtml(m.category)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteTeamMember('${m.id}')">Delete</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('team-list').innerHTML = html;
+  } catch(err) {
+    document.getElementById('team-list').innerHTML = '<p style="color:var(--error)">'+escHtml(err.message)+'</p>';
+  }
+}
+
+async function addTeamMember() {
+  const full_name = document.getElementById('team-name').value.trim();
+  const role = document.getElementById('team-role').value.trim();
+  const category = document.getElementById('team-category').value;
+  const email = document.getElementById('team-email').value.trim();
+  const bio = document.getElementById('team-bio').value.trim();
+  const photo_url = document.getElementById('team-photo').value.trim();
+  const linkedin_url = document.getElementById('team-linkedin').value.trim();
+  const twitter_url = document.getElementById('team-twitter').value.trim();
+  if (!full_name) return alert('Enter full name');
+  try {
+    await apiFetch('/api/team', { method: 'POST', body: { full_name, role, category, email, bio, photo_url, linkedin_url, twitter_url } });
+    document.getElementById('team-name').value = '';
+    document.getElementById('team-role').value = '';
+    document.getElementById('team-bio').value = '';
+    document.getElementById('team-email').value = '';
+    document.getElementById('team-photo').value = '';
+    document.getElementById('team-linkedin').value = '';
+    document.getElementById('team-twitter').value = '';
+    loadTeamList();
+  } catch(err) { alert(err.message); }
+}
+
+async function deleteTeamMember(id) {
+  if (!confirm('Delete this team member?')) return;
+  try {
+    await apiFetch('/api/team/' + id, { method: 'DELETE' });
+    loadTeamList();
+  } catch(err) { alert(err.message); }
 }
 
 // Override showPanel to load sessions

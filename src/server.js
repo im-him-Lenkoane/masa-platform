@@ -94,6 +94,7 @@ app.use('/api/comments',     require('./routes/comments'));
 app.use('/api/admin',        require('./routes/admin'));
 app.use('/api/email',        require('./routes/email'));
 app.use('/api/sessions',     require('./routes/sessions'));
+app.use('/api/team', require('./routes/team'));
 
 // ── Catch-all: serve index.html for SPA routing ──
 app.get('*', (req, res) => {
