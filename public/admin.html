@@ -808,12 +808,13 @@ function showPanel(name, btn) {
     'quizzes':        function() { loadSubjectsForSelects(['quiz-subject']); renderQuestionForm(); },
     'sessions':       function() { loadSessionsList(); loadSubjectsForSelects(['sess-subject']); },
     'grades':         loadGradesList,
+    'placeholders':   function() { loadPlaceholderTypes(); loadPlaceholderSubjectSelects(); },
     'faculties':      loadFacultiesList,
     'subjects':       loadSubjectsList,
-    'resources': function() { loadResourceFilters(); filterResources(); },
+    'resources':      function() { loadResourceFilters(); filterResources(); },
     'topics':         loadAllTopics,
     'branding':       loadBrandingPreview,
-    'team': loadTeamList,
+    'team':           loadTeamList,
   };
   if (loaders[name]) loaders[name]();
 }
