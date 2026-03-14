@@ -5,6 +5,7 @@
   <title>Subject — M@SA</title>
   <link rel="manifest" href="/assets/manifest.json">
   <link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/components.css">
+  <script src="/js/videoplayer.js"></script>
 </head>
 <body>
 
@@ -338,15 +339,14 @@ function buildResourceCard(r) {
 }
 
 // ── OPEN VIDEO ────────────────────────────────────
-function openVideo(resourceId, youtubeId, title, description, transcript) {
-  document.getElementById('video-title').textContent      = title;
-  document.getElementById('video-description').textContent = description;
-  document.getElementById('video-transcript').textContent  = transcript || 'No transcript available.';
-  document.getElementById('video-embed').innerHTML =
-    '<iframe src="https://www.youtube.com/embed/' + encodeURIComponent(youtubeId) +
-    '?rel=0" allowfullscreen loading="lazy"></iframe>';
-  loadComments(resourceId);
-  openModal('video-modal');
+function renderVideo(resource, containerId) {
+  initMASAPlayer(containerId, {
+    youtubeId: resource.youtube_id,
+    videoUrl: resource.s3_url,
+    thumbnail: resource.thumbnail_url,
+    transcript: resource.transcript_json,
+    topicId: resource.topic_id
+  });
 }
 
 // ── OPEN NOTES ────────────────────────────────────

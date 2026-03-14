@@ -147,6 +147,15 @@
             <div class="hint">Paste the full YouTube URL. Private or age-restricted videos won't work.</div>
           </div>
           <div class="form-group">
+  <label>Transcript (JSON format)</label>
+  <textarea id="vid-transcript" class="form-control" rows="4" 
+    placeholder='[{"time":0,"text":"Welcome to this lesson..."},{"time":10,"text":"Today we cover..."}]'></textarea>
+  </div>
+<div class="form-group">
+  <label>Thumbnail URL (optional)</label>
+  <input type="text" id="vid-thumbnail" placeholder="https://..." class="form-control">
+</div>
+          <div class="form-group">
             <label>Description (optional)</label>
             <textarea id="vid-desc" placeholder="Brief description of what this video covers..." style="min-height:80px"></textarea>
           </div>
