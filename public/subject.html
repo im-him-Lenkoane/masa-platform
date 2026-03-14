@@ -188,7 +188,7 @@ async function loadSubject(subjectId) {
         '</div>' +
       '</div>';
 
-    buildTopics(fullData.topics || [], fullData.resources || []);
+    await buildTopics(fullData.topics || [], fullData.resources || []);
     Chatbot.init(subjectId, subject.name, levelName);
 
     // Check offline status
@@ -220,17 +220,18 @@ async function buildTopics(topics, resources) {
 
   let html = '';
   for (let i = 0; i < topics.length; i++) {
-    t = topics[i];
+    const t = topics[i];
+    const topicResources = resources.filter(r => r.topic_id === t.id);
+    const num = (i + 1 < 10 ? '0' : '') + (i + 1);
 
     let resourceCards = '';
     if (topicResources.length) {
       topicResources.forEach(r => {
         resourceCards += buildResourceCard(r);
       });
-      resourceCards = '<div class="resources-grid">' + resourceCards + '</div>';
+      resourceCards = '<div class="resource-grid">' + resourceCards + '</div>';
     } else {
-        resourceCards = await buildPlaceholderBoxes(t.id);
-      }
+      resourceCards = await buildPlaceholderBoxes(t.id);
     }
 
     html +=
@@ -257,6 +258,7 @@ async function buildTopics(topics, resources) {
   container.innerHTML = html;
   initTopicAccordions();
 }
+
 async function buildPlaceholderBoxes(topicId) {
   try {
     const placeholders = await apiFetch('/api/placeholders/topic/' + topicId);
