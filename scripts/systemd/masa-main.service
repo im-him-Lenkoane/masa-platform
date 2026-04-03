@@ -1,0 +1,17 @@
+[Unit]
+Description=MASA.Main ASP.NET Core Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/masa/main
+ExecStart=/usr/bin/dotnet /var/www/masa/main/MASA.Main.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=masa-main
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target

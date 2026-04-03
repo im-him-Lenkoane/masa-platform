@@ -1,0 +1,34 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Home"; }
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow anim d1">MASA &middot; M in M</div>
+        <h1 class="hero-title anim d2" style="margin-bottom:1rem;">Morgan in Maths</h1>
+        <p class="hero-sub anim d3">Maths for every mind, every level — from Grade 1 to university.</p>
+        <div class="hero-actions anim d4">
+          <a href="#content" class="btn btn-primary">Get Started</a>
+          <a href="/about"   class="btn btn-outline">About</a>
+        </div>
+      </div>
+      <div class="hero-visual anim d3"></div>
+    </div>
+  </div>
+</section>
+<section id="content" class="section">
+  <div class="container">
+    <div class="section-hd">
+      <span class="eyebrow">Maths</span>
+      <h2>Morgan in Maths</h2>
+      <p>Maths for every mind, every level — from Grade 1 to university.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card anim d1" style="aspect-ratio:1.4;background:var(--c-gold-dim);"></div>
+      <div class="card anim d2" style="aspect-ratio:1.4;background:var(--c-gold-dim);opacity:.7;"></div>
+      <div class="card anim d3" style="aspect-ratio:1.4;background:var(--c-gold-dim);opacity:.5;"></div>
+    </div>
+  </div>
+</section>

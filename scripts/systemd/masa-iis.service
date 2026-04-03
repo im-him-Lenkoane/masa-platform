@@ -1,0 +1,17 @@
+[Unit]
+Description=MASA.IIS ASP.NET Core Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/masa/iis
+ExecStart=/usr/bin/dotnet /var/www/masa/iis/MASA.IIS.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=masa-iis
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target

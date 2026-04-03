@@ -1,0 +1,82 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Home"; }
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow anim d1">Messelaar Agency for Social Action NPC</div>
+        <h1 class="hero-title anim d2">Action.<br>Education.<br><em>Justice.</em></h1>
+        <p class="hero-sub anim d3">A South African non-profit advancing communities through accessible education, advocacy, health support, and skills development.</p>
+        <div class="hero-actions anim d4">
+          <a href="/projects" class="btn btn-primary">Our Projects</a>
+          <a href="/join"     class="btn btn-outline">Join Free</a>
+        </div>
+      </div>
+      <div class="hero-visual anim d3"></div>
+    </div>
+  </div>
+</section>
+
+<section class="stats-bar">
+  <div class="container">
+    <div class="stats-grid">
+      <div><div class="stat-num">8</div><div class="stat-label">Active Platforms</div></div>
+      <div><div class="stat-num">6+</div><div class="stat-label">Subdomains</div></div>
+      <div><div class="stat-num">SA</div><div class="stat-label">South Africa</div></div>
+      <div><div class="stat-num">NPC</div><div class="stat-label">Non-Profit</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-hd anim">
+      <span class="eyebrow">What We Do</span>
+      <h2>Our Platforms</h2>
+      <p>Each subdomain addresses a distinct community need — all united by the MASA mission.</p>
+    </div>
+    <div class="grid-3">
+      <a href="https://edu.masa.org.za"    class="card anim d1" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">Academic</span>
+        <h3>Education</h3>
+        <p>Grade 10–12 and tertiary support with AI tutoring and live sessions.</p>
+      </a>
+      <a href="https://ba.masa.org.za"     class="card anim d2" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">LMS</span>
+        <h3>Builders Academy</h3>
+        <p>Full learning management system for youth skills development.</p>
+      </a>
+      <a href="https://stem.masa.org.za"   class="card anim d3" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">STEM</span>
+        <h3>MASA STEM</h3>
+        <p>Out-of-classroom science and technology for South African youth.</p>
+      </a>
+      <a href="https://minm.masa.org.za"   class="card anim d1" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">Maths</span>
+        <h3>Morgan in Maths</h3>
+        <p>Mathematics for every grade and level by Morgan Itumeleng Lenkoane.</p>
+      </a>
+      <a href="https://iis.masa.org.za"    class="card anim d2" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">Advocacy</span>
+        <h3>Injustices in Society</h3>
+        <p>Report GBV, service delivery failures, and social injustices.</p>
+      </a>
+      <a href="https://health.masa.org.za" class="card anim d3" style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="project-tag">Health</span>
+        <h3>MASA Health</h3>
+        <p>SRHR, GBV, chronic and rare disease support and case lodging.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--c-bg-alt);">
+  <div class="container" style="text-align:center;">
+    <span class="eyebrow">Free Membership</span>
+    <h2 style="margin-bottom:.75rem;">Join the MASA community</h2>
+    <p style="max-width:520px;margin:0 auto 2rem;">Free membership gives you access to all MASA platforms and resources.</p>
+    <a href="/join" class="btn btn-primary">Join Us &mdash; Free</a>
+  </div>
+</section>

@@ -1,0 +1,67 @@
+@{
+    string pageTitle = ViewData["Title"]?.ToString() ?? "MASA STEM";
+}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@pageTitle &mdash; MASA STEM</title>
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-box">
+        <img src="~/images/logo.png" alt="MASA Logo" />
+      </div>
+      <span class="nav-brand">MASA<span class="accent"> &middot; </span>STEM</span>
+    </a>
+    <ul class="nav-links"><li><a href="/">Home</a></li><li><a href="/subjects">Subjects</a></li><li><a href="/contribute">Contribute</a></li><li><a href="/resources">Resources</a></li><li><a href="/about">About</a></li></ul>
+    <div class="nav-actions">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+      <a href="/login" class="btn btn-primary" style="font-size:.82rem;padding:.44rem 1.1rem;">Sign In</a>
+      <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <div class="container"><ul><li><a href="/">Home</a></li><li><a href="/subjects">Subjects</a></li><li><a href="/contribute">Contribute</a></li><li><a href="/resources">Resources</a></li><li><a href="/about">About</a></li></ul></div>
+  </div>
+</nav>
+<main>@RenderBody()</main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="nav-brand" style="color:#F8F4EE;">MASA<span class="accent"> &middot; </span>NPC</span>
+        <p>Messelaar Agency for Social Action. Advancing community wellbeing through education, advocacy, and action across South Africa.</p>
+      </div>
+      <div class="footer-col"><h5>Organisation</h5><ul>
+        <li><a href="https://masa.org.za">Main Site</a></li>
+        <li><a href="https://masa.org.za/about">About MASA</a></li>
+        <li><a href="https://masa.org.za/projects">Our Projects</a></li>
+        <li><a href="https://masa.org.za/join">Join Us</a></li>
+      </ul></div>
+      <div class="footer-col"><h5>Platforms</h5><ul>
+        <li><a href="https://edu.masa.org.za">Education</a></li>
+        <li><a href="https://ba.masa.org.za">Builders Academy</a></li>
+        <li><a href="https://stem.masa.org.za">STEM</a></li>
+        <li><a href="https://minm.masa.org.za">Morgan in Maths</a></li>
+      </ul></div>
+      <div class="footer-col"><h5>Support</h5><ul>
+        <li><a href="https://iis.masa.org.za">Report Injustice</a></li>
+        <li><a href="https://health.masa.org.za">Health Support</a></li>
+        <li><a href="https://masa.org.za/contact">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; @DateTime.Now.Year Messelaar Agency for Social Action NPC</span>
+      <span>Registered NPC &middot; South Africa</span>
+    </div>
+  </div>
+</footer>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

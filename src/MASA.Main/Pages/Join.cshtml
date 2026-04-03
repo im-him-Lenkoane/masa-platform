@@ -1,0 +1,21 @@
+@page "/join"
+@model JoinModel
+@{ ViewData["Title"] = "Join MASA"; }
+<section class="section" style="padding-top:120px;">
+  <div class="container-sm">
+    <span class="eyebrow">Free Membership</span>
+    <h1 style="margin-bottom:.75rem;">Join MASA</h1>
+    <p style="margin-bottom:2rem;">Membership is completely free and gives you access to all MASA platforms.</p>
+    @if(TempData["Success"] != null){<div class="alert alert-success">@TempData["Success"]</div>}
+    @if(TempData["Error"] != null){<div class="alert alert-error">@TempData["Error"]</div>}
+    <form class="card" method="post">
+      <div class="grid-2" style="gap:1rem;">
+        <div class="form-group"><label>First Name</label><input class="form-control" name="FirstName" required /></div>
+        <div class="form-group"><label>Last Name</label><input class="form-control" name="LastName" required /></div>
+      </div>
+      <div class="form-group"><label>Email Address</label><input class="form-control" type="email" name="Email" required /></div>
+      <div class="form-group"><label>Phone (optional)</label><input class="form-control" name="Phone" /></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem;">Apply for Free Membership</button>
+    </form>
+  </div>
+</section>

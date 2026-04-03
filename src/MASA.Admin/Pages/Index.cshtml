@@ -1,0 +1,15 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Admin Dashboard"; }
+<section class="section" style="padding-top:100px;">
+  <div class="container">
+    <span class="eyebrow">Control Panel</span>
+    <h1 style="margin-bottom:2rem;">MASA Admin Dashboard</h1>
+    <div class="grid-4">
+      <a href="/users"   class="card" style="text-align:center;gap:.5rem;display:flex;flex-direction:column;align-items:center;"><h3>Users</h3><p>Manage all platform users and roles.</p></a>
+      <a href="/media"   class="card" style="text-align:center;gap:.5rem;display:flex;flex-direction:column;align-items:center;"><h3>Media Library</h3><p>Upload images, icons, banners across all subdomains.</p></a>
+      <a href="/members" class="card" style="text-align:center;gap:.5rem;display:flex;flex-direction:column;align-items:center;"><h3>Members</h3><p>View and manage MASA members.</p></a>
+      <a href="/roles"   class="card" style="text-align:center;gap:.5rem;display:flex;flex-direction:column;align-items:center;"><h3>Roles</h3><p>Configure role permissions per subdomain.</p></a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,17 @@
+[Unit]
+Description=MASA.Edu ASP.NET Core Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/masa/edu
+ExecStart=/usr/bin/dotnet /var/www/masa/edu/MASA.Edu.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=masa-edu
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target
