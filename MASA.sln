@@ -1,0 +1,26 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.Shared", "src\MASA.Shared\MASA.Shared.csproj", "{A1B2C3D4-0001-0001-0001-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.Main", "src\MASA.Main\MASA.Main.csproj", "{A1B2C3D4-0002-0002-0002-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.Admin", "src\MASA.Admin\MASA.Admin.csproj", "{A1B2C3D4-0003-0003-0003-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.Edu", "src\MASA.Edu\MASA.Edu.csproj", "{A1B2C3D4-0004-0004-0004-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.IIS", "src\MASA.IIS\MASA.IIS.csproj", "{A1B2C3D4-0005-0005-0005-000000000005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.Health", "src\MASA.Health\MASA.Health.csproj", "{A1B2C3D4-0006-0006-0006-000000000006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.BA", "src\MASA.BA\MASA.BA.csproj", "{A1B2C3D4-0007-0007-0007-000000000007}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.STEM", "src\MASA.STEM\MASA.STEM.csproj", "{A1B2C3D4-0008-0008-0008-000000000008}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASA.MINM", "src\MASA.MINM\MASA.MINM.csproj", "{A1B2C3D4-0009-0009-0009-000000000009}"
+EndProject
+Global
+  GlobalSection(SolutionConfigurationPlatforms) = preSolution
+    Debug|Any CPU = Debug|Any CPU
+    Release|Any CPU = Release|Any CPU
+  EndGlobalSection
+EndGlobal
